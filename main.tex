@@ -1,8 +1,3 @@
-% Landau Geometry of Computational Resources -- MSCS submission source.
-% Compile with pdfLaTeX until references stabilize (normally three passes).
-% Self-contained: bibliography and diagrams are embedded; no shell escape.
-% Journal: Mathematical Structures in Computer Science.
-
 \documentclass[11pt,a4paper]{article}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -10,6 +5,7 @@
 \usepackage[margin=29mm]{geometry}
 \usepackage{amsmath,amssymb,amsthm,mathtools,mathrsfs}
 \usepackage{microtype}
+\usepackage{etoolbox,needspace}
 \usepackage[authoryear,round]{natbib}
 \setcitestyle{aysep={},yysep={,},notesep={, }}
 \usepackage{enumitem,booktabs,array,longtable}
@@ -19,22 +15,36 @@
 \algrenewcommand{\algorithmicrequire}{\textbf{Input:}}
 \algrenewcommand{\algorithmicensure}{\textbf{Output:}}
 \usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black]{hyperref}
+\usepackage{aliascnt}
 \usepackage[nameinlink,noabbrev,capitalise]{cleveref}
 \hypersetup{pdftitle={Landau Geometry of Computational Resources},pdfauthor={Conor Sheridan}}
 \setlist{itemsep=2pt,topsep=5pt}
 \setlist[enumerate,1]{label=(\arabic*),ref=\arabic*}
 \setlist[enumerate,2]{label=(\alph*),ref=\theenumi(\alph*)}
 \setlength{\emergencystretch}{2em}
+\AtBeginEnvironment{proof}{\Needspace{4\baselineskip}}
 \numberwithin{equation}{section}
 \newtheorem{theorem}{Theorem}[section]
-\newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{corollary}[theorem]{Corollary}
+\newaliascnt{proposition}{theorem}
+\newtheorem{proposition}[proposition]{Proposition}
+\aliascntresetthe{proposition}
+\newaliascnt{lemma}{theorem}
+\newtheorem{lemma}[lemma]{Lemma}
+\aliascntresetthe{lemma}
+\newaliascnt{corollary}{theorem}
+\newtheorem{corollary}[corollary]{Corollary}
+\aliascntresetthe{corollary}
 \theoremstyle{definition}
-\newtheorem{definition}[theorem]{Definition}
-\newtheorem{example}[theorem]{Example}
+\newaliascnt{definition}{theorem}
+\newtheorem{definition}[definition]{Definition}
+\aliascntresetthe{definition}
+\newaliascnt{example}{theorem}
+\newtheorem{example}[example]{Example}
+\aliascntresetthe{example}
 \theoremstyle{remark}
-\newtheorem{remark}[theorem]{Remark}
+\newaliascnt{remark}{theorem}
+\newtheorem{remark}[remark]{Remark}
+\aliascntresetthe{remark}
 \theoremstyle{plain}
 % Computational domains, classified partiality, and observations.
 \newcommand{\E}{\mathcal E}
@@ -70,6 +80,8 @@
 \setcounter{tocdepth}{2}
 \makeatletter
 \renewcommand*\l@section{\@dottedtocline{1}{0em}{1.7em}}
+% Keep algorithm-line destinations unique without changing printed numbering.
+\def\theHALG@line{\thealgorithm.\arabic{ALG@line}}
 \makeatother
 \newcommand{\Pos}{\operatorname{Pos}}
 \newcommand{\cl}{\operatorname{cl}}
@@ -82,6 +94,9 @@
 
 % Rational coefficients and Landau notation.
 \newcommand{\Qplus}{{\QQ_{\ge0}}}
+\newcommand{\BinWords}{\{0,1\}^{*}}
+\newcommand{\DTIME}{\operatorname{DTIME}}
+\newcommand{\DSPACE}{\operatorname{DSPACE}}
 
 \newcommand{\Emb}{\mathsf{Emb}}
 \newcommand{\Wit}{\mathsf{Wit}}
@@ -119,7 +134,9 @@
 \newcommand{\Up}{\operatorname{Up}}
 \newcommand{\Sh}{\operatorname{Sh}}
 \theoremstyle{definition}
-\newtheorem{construction}[theorem]{Construction}
+\newaliascnt{construction}{theorem}
+\newtheorem{construction}[construction]{Construction}
+\aliascntresetthe{construction}
 \crefname{construction}{Construction}{Constructions}
 \Crefname{construction}{Construction}{Constructions}
 
@@ -142,7 +159,11 @@ eventual germs. Embedded resource modules represent asymptotic budgets;
 a coherent locale classifies their families, and measured execution
 supplies the implementations witnessing feasibility. Compactness and
 supercompactness characterize finite dominating portfolios and optimal
-implementations.
+implementations. Finite maxima over word-length fibres recover
+conventional worst-case time and workspace, and constructed clocks
+identify the polynomial budget with $\mathbf P$. Implementationwise
+double-negation closure gives the exact classical reading of universal
+lower bounds while retaining the internal witness-bearing judgments.
 
 Polynomial event valuations connect execution to differential geometry:
 their measured Taylor coefficients agree with geometric jets. Embedded
@@ -154,7 +175,8 @@ The primary infinitesimal geometry represents formal principal parts and
 completed diagonal cochains. An explicit contraction compares the latter
 with de Rham forms; integrable connections yield stratifications and
 crystalline jet coalgebras. The comparisons retain resource parameters,
-coefficients, and effective finite observations. A measured family
+coefficients, and uniformly tracked finite outputs on coefficient
+names. A measured family
 exhibits polynomial bounds at every finite order without one polynomial
 budget for the complete coefficient family; its generating function also
 provides a nonzero logarithmic de Rham class and crystalline transport.
@@ -209,6 +231,13 @@ which every such family is obtained. We use a locale, so that this
 classification is formulated through open conditions without requiring
 the space to be determined by its points.
 
+For the cofinite filter on numerical inputs, every positive
+($\Sigma$-valued) observation of a growth class is constant and every
+growth ideal is admitted
+(\cref{prop:cofinite-positive-observations}). Computational information
+is retained on names and measured executions, while resource membership
+remains $\Truth$-valued and need not be $\Sigma$-classified.
+
 For a fixed problem, each implementation contributes the budgets that
 admit its cost. Their union is the open condition that the problem can
 be solved within the budget. Its compactness has a computational
@@ -218,6 +247,22 @@ supercompactness is equivalent to the existence of one optimal
 implementation. The corresponding constructions and classification
 theorems appear in
 \cref{thm:locale-modules,thm:universal-cost,thm:optimization-compactness}.
+
+
+\paragraph{Conventional worst-case complexity.}
+For finite binary inputs, maximum over each word-length fibre is left
+adjoint to pulling a bound back along length. This operation descends
+through eventual equality and Landau growth, producing a measured span
+whose upper predicates are exactly the conventional deterministic time
+and workspace classes. Explicit polynomial clocks, tape simulations,
+encodings, and composition identify its polynomial budget with
+$\mathbf P$ (\cref{sec:worst-case,thm:wc-classes,thm:wc-p,thm:wc-space}).
+Universal lower bounds retain a separate logical issue: an internal
+witness transformation and classical implementationwise existence have
+different meanings. \Cref{thm:wc-classical-lower} constructs the exact
+classical predicate by closing the implementationwise relation under
+double negation before universal quantification. No extra logical axiom
+is imposed.
 
 \paragraph{From measured variation to differential geometry.}
 An execution produces a finite history. Assigning polynomial weights
@@ -293,6 +338,11 @@ also have an established role in algorithm selection
 \citep{GomesSelman2001AlgorithmPortfolios}. Here budgets are embedded
 modules, and their classifying locale relates the existence of optimal
 implementations and finite portfolios to topological compactness.
+For conventional worst-case classes, we use the standard running-time
+definitions of \citet[Chapter 13]{BarakRunningTime} and the constructive
+tape simulation of \citet{HennieStearns1966}. The logical reading of
+universal bounds uses recursive realizability
+\citep{Kleene1945,Hyland1982EffectiveTopos}.
 
 The connection between cost semantics and execution builds on
 \citet{NiuSterlingHarper2024CostSensitiveSDT} and the distinction
@@ -331,7 +381,9 @@ finite-projective modules.
 \paragraph{Route through the paper.}
 Sections~\ref{sec:foundation}--\ref{sec:feasibility-moduli} construct
 the computational foundation, resource algebra, budget classifier,
-and implementation witnesses. Sections~\ref{sec:relative-geometry}--\ref{sec:resource-deformations}
+and implementation witnesses. Section~\ref{sec:worst-case} constructs
+the conventional worst-case instance and its classical predicates.
+Sections~\ref{sec:relative-geometry}--\ref{sec:resource-deformations}
 connect measured Taylor coefficients to variations of valuations and
 budgets. Sections~\ref{sec:primary-geometry}--\ref{sec:jets} construct
 the infinitesimal geometry, completion, de Rham comparison, and jets.
@@ -382,9 +434,16 @@ to descend exactly when it coequalizes the kernel pair of its
 presentation. A total functional relation determines a unique arrow,
 because its projection is both monic and regular epic.
 
-The exact-completion presentation by partitioned assemblies
-\citep[Section 10.6, especially Theorem 10.6.7]{Birkedal2000TypesComputability}
-provides the projective covers used in \cref{app:names-codes}.
+The exact/regular construction from assemblies supplies effective
+quotients, while retaining all realizing witnesses supplies canonical
+partitioned-assembly covers. The cover, modest-target lifting, and
+covered-span constructions are proved in \cref{app:names-codes}.
+Unrestricted projectivity of arbitrary-carrier partitioned assemblies
+uses external choice in the ex/lex description
+\citep[Section 10.6]{Birkedal2000TypesComputability}; the dependence is
+identified in \citet[Section 2.4]{Hofstra2003Completions}.
+The constructions below use covers and effective descent rather than
+that unrestricted lifting assertion.
 
 
 \begin{definition}[Partitioned assemblies and trackers]\label{def:partitioned-assemblies}
@@ -422,13 +481,14 @@ conjunction, and finite disjunction.
 
 \item \textbf{Prove closure under dependent conjunction.}
 To check dependent conjunction,
-pull two successive classified monos back to a partitioned projective
-cover $P$ of their ambient object. Lift the first classifier through
+pull two successive classified monos back to the canonical partitioned
+cover $P$ of their ambient object. Since $2^\N$ is modest,
+\cref{lem:modest-target-lifting} lifts the first classifier through
 $2^\N\onto\Sigma$, obtaining a total tracked stream $\alpha_p$.
 On its hit assembly
 $H_\alpha=\{(p,n):\alpha_p(n)=1\}$, lift the second classifier to
-a total tracked stream $\beta_{p,n}$. This is possible on the displayed
-partitioned subassembly. The stream
+a total tracked stream $\beta_{p,n}$. The same modest-target lemma
+applies to the displayed partitioned hit subassembly. The stream
 \[
  \gamma_p(\langle n,k\rangle)=
  \begin{cases}
@@ -442,8 +502,9 @@ coequalizes the kernel pair of $P$ and descends through
 $i:\Sigma\incl\Truth$. This proves dominance in every parameter context.
 
 \item \textbf{Construct uniform natural-number search.}
-For $\exists_\N$, cover $\Sigma^\N$ projectively and lift evaluation on
-the product of that cover with $\N$ to streams $\alpha_{p,n}(k)$.
+For $\exists_\N$, take the canonical partitioned cover of $\Sigma^\N$.
+Its product with $\N$ is partitioned, so \cref{lem:modest-target-lifting}
+lifts evaluation to streams $\alpha_{p,n}(k)$.
 The single total stream
 $\gamma_p(\langle n,k\rangle)=\alpha_{p,n}(k)$ represents the desired
 existential. Its classifier descends for the same reason. These
@@ -865,10 +926,15 @@ a general observed domain retains its separate observation data.
 
 \begin{definition}[Name presentations and partial implementations]\label{def:name-presentations}
 A \textbf{name presentation} of $\Pt D$ is a regular epimorphism
-$q_D:C_D\onto\Pt D$ from a partitioned assembly. Such presentations
-and their tracked lifts are constructed in \cref{prop:standalone-name-lifting}. A \textbf{partial implementation} retains both
-the returned value equation and equality of its domain with the
-pullback of the semantic domain.
+$q_D:C_D\onto\Pt D$ from a partitioned assembly. Canonical covers
+and covered-span presentations of arrows are constructed in
+\cref{prop:standalone-name-lifting}; modest target name covers admit
+tracked lifts by \cref{lem:modest-target-lifting}.
+A \textbf{partial implementation} is an actual tracked partial map
+on the retained name carriers, with its returned-value equation and
+equality of its domain with the pullback of the semantic domain.
+The finite implementation descriptions below construct these maps;
+an arbitrary semantic arrow is presented by its covered span.
 \end{definition}
 
  Names, their sizes, and their costs
@@ -882,7 +948,9 @@ The selected completion, its monad structure, and the observation and
 partial-return constructions commute with substitution between parameter
 slices of $\E$.
 \end{proposition}
-\begin{proof}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Identify the slice constructions.}
 For $\sigma:\Delta\to\Gamma$, pullback preserves finite limits and
 regular images. The slice power-object and dependent-product
 Beck--Chevalley comparisons give
@@ -890,13 +958,19 @@ Beck--Chevalley comparisons give
  \sigma^*\Pow_\Gamma(P)\cong\Pow_\Delta(\sigma^*P),\qquad
  \sigma^*(Y^X)\cong(\sigma^*Y)^{\sigma^*X}.
 \]
+
+\item \textbf{Transport the defining predicates and maps.}
 These comparisons transport inhabitedness, directedness, lower closure,
 and the map of upper observations. Hence they identify
 $\sigma^*(\J^\Gamma P)$ with $\J^\Delta(\sigma^*P)$, including
 the principal-ideal unit and union multiplication. They also transport
 the defining pullback for effective points and the classified extents
-and values of partial returns. Identity and composite substitutions
+and values of partial returns.
+
+\item \textbf{Verify substitution coherence.}
+Identity and composite substitutions
 give the same comparison by their defining universal properties.
+\end{enumerate}
 \end{proof}
 
 Execution uses these effective domains for partiality, observations,
@@ -1188,7 +1262,11 @@ For $f,g:A\times\N\to\QQ$, \textbf{uniform domination} is the predicate
 
 
 All the arithmetic proofs preserve uniformity because only
-finitely many bounds are combined at each tolerance.
+finitely many bounds are combined at each tolerance. The internal
+pointwise-in-$A$ predicate still retains effective witness dependence
+on a parameter name; it is distinct from choosing one constant for
+all parameters. The exact classical reading for implementation
+families is constructed in \cref{sec:wc-classical-lower}.
 
 \subsubsection{Oscillation and infinitely-often bounds}
 
@@ -1251,30 +1329,50 @@ For $f,g\in K$,
 \]
 Multiplication by $g$ identifies $Be_g$ with $Bg$.
 \end{lemma}
-\begin{proof}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Construct the bounded quotient.}
 Define $b(x)=f(x)/g(x)$ where $g(x)\ne0$, and $b(x)=0$ otherwise.
 An eventual bound $\abs f\le a\abs g$ bounds $\abs b$ by $a$ and
-ensures $f=bg$ on the same extent. Conversely any bound on $\abs b$
-gives domination. On $Bg$, this division is a $B$-linear inverse to
+ensures $f=bg$ on the same extent.
+
+\item \textbf{Recover domination from a multiplier.}
+Conversely any bound on $\abs b$
+gives domination.
+
+\item \textbf{Identify the supported principal module.}
+On $Bg$, this division is a $B$-linear inverse to
 $Be_g\to Bg$, since the quotient of $cg$ by $g$, extended by zero,
 is $ce_g$. The formulas respect eventual equality and thus define
 maps on germs.
+\end{enumerate}
 \end{proof}
 
 \begin{proposition}[Bounded coefficients and the total quotient ring]\label{prop:signed-coefficients}
 The ring $B$ is reduced, $\Ann_B(g)=Bz_g$ for every $g\in K$, and
 $K$ is the total quotient algebra of $B$.
 \end{proposition}
-\begin{proof}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Prove reducedness.}
 If $b^r=0$ for a positive integer $r$, rational arithmetic gives $b=0$
-on the same eventual extent. If $bg=0$, then $b=bz_g$ as germs;
-the converse follows from $z_gg=0$. Hence a regular element $b\in B$
+on the same eventual extent.
+
+\item \textbf{Calculate annihilators.}
+If $bg=0$, then $b=bz_g$ as germs;
+the converse follows from $z_gg=0$.
+
+\item \textbf{Invert regular bounded coefficients.}
+Hence a regular element $b\in B$
 has $z_b=0$ and is eventually nonzero. Its rational reciprocal, set
 to zero off its support, is an inverse in $K$.
+
+\item \textbf{Prove the total-quotient universal property.}
 For arbitrary $f\in K$, the germ $s=(1+\abs f)^{-1}$ is regular
 and bounded, and $sf\in B$. Thus every element of $K$ is a fraction
 of bounded germs with regular denominator. Regularity reflects
 equality of these fractions, proving the localization universal property.
+\end{enumerate}
 \end{proof}
 
 \subsubsection{Units and the vanishing ideal}
@@ -1530,7 +1628,9 @@ isomorphism
 Every resource is a directed union of displayed finite-projective
 principal modules and is flat over $B$.
 \end{theorem}
-\begin{proof}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Identify principal resource tensors.}
 For principal resources, bounded division gives $Bg\cong Be_g$ and
 $Bh\cong Be_h$. Multiplication identifies
 \[
@@ -1543,16 +1643,20 @@ Since $e_{gh}=e_ge_h$, the support isomorphisms identify this map with
 $Bg\otimes_BBh\to Bgh$, $f\otimes k\mapsto fk$.
 In particular it commutes with inclusions of principal resources.
 
+\item \textbf{Construct the directed principal presentation.}
 For any finite family $f_1,\ldots,f_n\in M$, put
 $g=\sum_i\abs{f_i}$. The sign multipliers lie in $B$, so $g\in M$,
 and bounded division puts every $f_i$ in $Bg$. Thus the principal
 submodules form an inhabited directed system with union $M$.
+
+\item \textbf{Deduce flatness from finite witnesses.}
 Each $Bg\cong Be_g$ is a displayed retract of $B$ and is flat.
 Filtered colimits are exact internally: a finite relation in a colimit
 is witnessed at a common stage, where the corresponding finite relation
 can be checked. This is the finite-witness argument for flat filtered
 colimits \citep[Tag~05UT]{Stacks}. Hence $M$ is flat.
 
+\item \textbf{Assemble the marked tensor isomorphism.}
 Tensor preserves colimits in each variable by its balanced-map universal
 property. Taking the directed colimit of the principal multiplication
 isomorphisms gives $M\otimes_BN\cong\bigcup_{g\in M,h\in N}Bgh$.
@@ -1560,6 +1664,7 @@ This union equals $MN$: any finite sum of products lies in a common
 principal product stage, by choosing common stages in both factors.
 The resulting map is multiplication into $K$, proving the assertion
 with its marking.
+\end{enumerate}
 \end{proof}
 
 
@@ -1680,12 +1785,17 @@ Every embedded resource is flat over $B$, and multiplication identifies
 $M\otimes_BN$ with $MN\subseteq K$. The ring $B$ is reduced and
 semihereditary, and $K$ is its total quotient algebra.
 \end{corollary}
-\begin{proof}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Collect flatness and the coefficient identities.}
 Flatness and the tensor formula are \cref{thm:resource-tensor}; the
 coefficient-ring assertions are \cref{prop:signed-coefficients}.
+
+\item \textbf{Prove semihereditariness.}
 Every finitely generated ideal of $B$ is principal by the sum formula
 in \cref{thm:signed-rep}, and its support displays it as a retract of
 $B$. This proves semihereditariness.
+\end{enumerate}
 \end{proof}
 
 In particular $f\in\Theta(g)$ says that $f$ and $g$ generate
@@ -1767,6 +1877,93 @@ types
 \]
 
 
+\begin{proposition}[Positive observations in the cofinite numerical fibre]
+\label{prop:cofinite-positive-observations}
+For the cofinite filter on numerical input, evaluation at zero gives
+canonical isomorphisms
+\[
+ \Sigma^B\cong\Sigma,\qquad
+ \Sigma^M\cong\Sigma\quad(M\in\Mod_B),\qquad
+ \Sigma^L\cong\Sigma.
+\]
+They hold uniformly in parameter contexts. Consequently
+\[
+ \operatorname{Mon}(L,\Sigma)\cong\Sigma,\qquad
+ \J L=\Idl(L),\qquad \chi_I(u)=u(0).
+\]
+The isomorphisms concern positive observations of germs and growth
+classes. Resource membership and its marked geometry retain their
+$\Truth$-valued predicates.
+\end{proposition}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Obtain one uniform semidecision on binary names.}
+Let $v:Z\times B\to\Sigma$. Compose it with the map sending
+a binary sequence to its bounded germ, and pull the parameter
+object back to its canonical partitioned cover. The numerical
+support of $2^\N$ is partitioned. By
+\cref{lem:modest-target-lifting}, the resulting classifier lifts
+to binary hit streams. Thus one partial-recursive procedure
+$w(z,e)$ semidecides $v(z,[\varphi_e])$ on total binary sequence
+names $e$, uniformly in the parameter name.
+
+\item \textbf{Identify the observations of zero and one.}
+The recursion theorem with parameters
+\citep[Section 2]{Terwijn2024FixedPoints} constructs a name $e$
+for the total binary sequence
+\[
+ h_e(n)=
+ \begin{cases}
+ 1,&w(z,e)\text{ has not accepted within }n\text{ steps},\\
+ 0,&w(z,e)\text{ has accepted within }n\text{ steps}.
+ \end{cases}
+\]
+The bounded test makes $h_e$ total independently of whether
+acceptance occurs. If $v(z,1)$ holds and $w(z,e)$ never accepts,
+then $h_e$ is constantly one, contradicting correctness of $w$.
+Thus it accepts; $h_e$ is thereafter zero, so its germ is zero
+and $v(z,0)$ holds. Reversing the binary values proves the
+reverse implication. A witness transformation searches the target
+hit stream; the argument just given proves that this search
+terminates on every valid source witness. These programs are
+uniform in the parameter names. Equality of their hit supports
+therefore descends through the cover, giving $v(z,0)=v(z,1)$
+in $\Sigma$. This termination verification is in the usual
+external classical metatheory of the fixed effective-topos model;
+it does not posit an internal Markov principle or a choice principle.
+
+\item \textbf{Use scalar multiplication to contract module tests.}
+For $u:Z\times M\to\Sigma$, apply the preceding equality to
+$(z,m,b)\mapsto u(z,bm)$. Its values at $b=1$ and $b=0$ give
+$u(z,m)=u(z,0)$. Hence the constant-map operation and evaluation
+at zero are inverse, proving $\Sigma^M\cong\Sigma$ in every
+parameter context. Taking $M=B$ gives the first isomorphism.
+
+\item \textbf{Contract growth tests and compute admission.}
+Bounded scalar multiplication gives a well-defined action
+$B\times L\to L$, $(b,a)\mapsto[\abs b]a$:
+eventual equality of $b$ and mutual domination of representatives
+of $a$ preserve the resulting growth class. Its values at zero
+and one are $0$ and $a$. Applying the binary equality to
+$b\mapsto u(z,[\abs b]a)$ proves $u(z,a)=u(z,0)$.
+Every ideal contains $0$, so for every positive upper test
+\[
+ \chi_I(u)=\exists a\in I\,u(a)=u(0)\in\Sigma
+\]
+uniformly in $I,u$. This is exactly the admission pullback,
+proving $\J L=\Idl(L)$.
+\end{enumerate}
+\end{proof}
+
+In this cofinite fibre, admission therefore imposes no further
+restriction on growth ideals. The general construction of $\J$
+remains the one used for computational domains and other input
+filters. Finite tests of a sequence representative or a computation
+are retained on its name carrier; they descend to the germ or
+growth quotient exactly when their kernel-pair equation holds.
+The proposition shows that every descended positive test is constant.
+
+
 \begin{proposition}[Effective transport of resource observations]
 \label{prop:effective-resource-transport}
 A monotone map $r:L\to L'$ induces an effective Scott map
@@ -1824,7 +2021,12 @@ The principal ideal $\downarrow[1]$ is admitted by the unit of $\J$.
 \end{enumerate}
 \end{proof}
 
-The pairing \eqref{eq:resource-positive-pairing} supplies the positive resource observations. Matrix equations over germ coefficients are interpreted in $\Truth$.
+The pairing \eqref{eq:resource-positive-pairing} supplies the stipulated
+positive resource observations. In the cofinite numerical fibre they
+are constant by \cref{prop:cofinite-positive-observations}.
+Matrix equations over germ coefficients and resource membership
+are interpreted in $\Truth$; finite computational tests retain
+their sequence or execution names.
 
 \subsection{Gauge localization, soft notation, and coefficient descent}
 \label{sec:transport}
@@ -2602,8 +2804,10 @@ Associativity of this square is the family-valued version of the
 monoidal coherence in \cref{cor:cat-monoidal-resources}.
 
 
-The effective points of this locale are selected by the \emph{existing}
-admission doctrine, not by declaring every principal open effective.
+The admission doctrine identifies the effective points of this
+locale. In the cofinite numerical fibre all ideal points are
+admitted by \cref{prop:cofinite-positive-observations}; this does
+not make the principal-open membership predicates positive tests.
 \begin{proposition}[Admitted points and positive observation]
 \label{prop:localic-admission}
 The comparison $\operatorname{Pt}_{\E}(\Cplx)\cong\Idl(L)$ identifies
@@ -2616,6 +2820,8 @@ Localic multiplication restricts on this subobject to the
 admitted product $\J m$ of \cref{lem:admitted-growth-product}.
 The canonical map from the discrete locale on $\J L$ to
 $\Cplx$ pulls the universal module back to $I\mapsto M_I$.
+For cofinite numerical input this subobject is all of $\Idl(L)$,
+and its positive upper tests are constant.
 \end{proposition}
 \begin{proof}\leavevmode
 \begin{enumerate}[leftmargin=*,align=left]
@@ -2631,6 +2837,11 @@ The inclusion $\J L\incl\operatorname{Pt}_{\E}(\Cplx)$
 transposes to the canonical map from its discrete locale.
 Pullback of \eqref{eq:universal-membership} gives membership
 $[\abs f]\in I$, hence the family $I\mapsto M_I$.
+
+\item \textbf{Identify the cofinite specialization.}
+Apply \cref{prop:cofinite-positive-observations} to obtain
+$\J L=\Idl(L)$ and $\chi_I(u)=u(0)$. The universal membership
+predicate remains the displayed $\Truth$-valued predicate.
 \end{enumerate}
 \end{proof}
 
@@ -3815,10 +4026,11 @@ while taking an implementation fibre.
 Pairing a well-typed description with its environment constructs
 $E_{X,Y}\to\Env$. Interpretation is a morphism over $\Env$, obtained
 by the finite recursion of \cref{lem:standalone-syntax}. The primitive signature and its selected execution descriptions
-are retained in this context; by
-\cref{prop:universal-history-weights}, selecting a history
-valuation is precisely selecting an event-weight point of a
-computational exponential. We work internally at a generic
+are retained in this context. A general history valuation is a point
+of the computational exponential $[A^*,C]_\Sigma$. By
+\cref{prop:universal-history-weights}, the monoid-fold valuations
+are precisely those obtained by selecting an event-weight point of
+$[A,C]_\Sigma$ and taking its unique monoid extension. We work internally at a generic
 $\theta:\Env$, suppressing $\theta$ in the formulas. Thus $E_{X,Y}$
 below means $E_{X,Y,\theta}$, and an implementation quantifier fixes
 $\theta$. Products, function objects, images, and quantifiers in this
@@ -3966,10 +4178,12 @@ the input and output presentations
  q_X:C_X\onto X_0=\Pt D_X,\qquad
  q_Y:C_Y\onto Y_0=\Pt D_Y.
 \]
-Use the projective presentations and their implemented structural maps
-constructed in \cref{prop:standalone-name-lifting}, with partitioned refinements after pullback. Each
-primitive retains its partial name map and the equality of its
-domain with the pullback of the semantic domain. Finite products and
+Use the canonical name covers of \cref{prop:standalone-name-lifting}
+and the actual primitive implementations in the environment constructed
+in \cref{constr:standalone-syntax}. Each primitive retains its tracker,
+partial name map, returned-value equation, and equality of its domain
+with the pullback of the semantic domain. The structural maps are the
+explicit tuple, tag, substitution, and finite-return algorithms. Finite products and
 sums of these named sorts provide the typed execution fragment. The
 discrete admitted algebra on a name carrier allows the finite-word and
 weighted-execution constructions to be applied to these maps.
@@ -3977,7 +4191,7 @@ Let $\widehat A$ be their event object: an invocation event records the
 primitive tag and its input and output names; an unfolded primitive
 instead records its displayed internal execution events.
 
-\begin{theorem}[Measured name-presentation comparison]
+\begin{theorem}[Exact measured execution on names]
 \label{thm:measured-name-presentation}
 Finite recursion on the specified implementation descriptions constructs
 \begin{equation}\label{eq:named-history-evaluator}
@@ -4013,8 +4227,8 @@ and finite-description parameters.
 \begin{enumerate}[leftmargin=*,align=left]
 \item \textbf{Interpret the measured primitives and finite constructors.}
 Log the specified name primitives and apply
-\cref{prop:logged-descriptions}. Their domain-and-value squares
-are those of \cref{prop:standalone-name-lifting}.
+\cref{prop:logged-descriptions}. Their domain-and-value squares are those of the constructed
+implemented environment in \cref{constr:standalone-syntax}.
 Bind pulls back the next domain along the returned name, so
 these squares compose. The branching and sequential-pairing
 clauses preserve them by finite case analysis.
@@ -4092,7 +4306,9 @@ evaluator and separate their denotations from their costs.
 \begin{definition}[Total implementations and their measurements]\label{def:total-implementations}
 First take execution input and return carriers $X,Y$.
 Write $E=E_{X,Y}$, or use the numerical family of
-\cref{constr:numerical-execution}, with evaluator
+\cref{constr:numerical-execution} or the Turing-machine family of
+\cref{constr:wc-tm}, with the corresponding evaluator
+of the form
 \eqref{eq:measured-evaluator}. If $d:E\times X\to\Sigma$ classifies
 its domain, the \textbf{total implementations} form the subobject
 \[
@@ -4409,6 +4625,12 @@ The lower-bound constants and eventual extents occur inside
 $\forall e$; the variant with uniform constants is a different
 dependent-quantifier expression.
 \end{definition}
+
+These are internal judgments retaining their witness transformations.
+For conventional worst-case lower bounds, the exact classical
+predicate is obtained by implementationwise double-negation closure
+before $\forall_p$, as constructed and proved in
+\cref{constr:wc-classical-lower,thm:wc-classical-lower}.
 
 
 \begin{proposition}[Complexity bounds as inclusions of feasibility opens]
@@ -5067,49 +5289,59 @@ as follows.
 
 \begin{proposition}[Named transport of admitted budgets]
 \label{prop:named-budget-transport}
-The observed map $\F r$ has the admitted-point map $\J r$ and, on the
-projective name presentations of \cref{prop:standalone-name-lifting}, an implementation
+The observed map $\F r$ has admitted-point map $\J r$.
+For name covers $C_L\onto\J L$ and $C_{L'}\onto\J L'$, its
+canonical covered-span presentation is
 \begin{equation}\label{eq:named-budget-transport}
- \widehat{\J r}:C_L\to C_{L'},\qquad
- q_{L'}\widehat{\J r}=\J r\,q_L.
+ C_L\xleftarrow[\mathrm{epi}]{p}\widehat P_r
+ \xrightarrow{v}C_{L'},\qquad
+ q_{L'}v=\J r\,q_Lp.
 \end{equation}
-For a family of monotone $r$, this construction is uniform after
-retaining a projective name for that family parameter. The compiler
-code for $\gamma$ and this budget tracker jointly present the action
-on named implementations and admitted budgets.
+It is uniform in a named family of monotone maps $r$.
+The left leg covers the entire input name carrier, and effective
+descent recovers exactly $\J r$. The compiler code for $\gamma$
+and this covered budget operation jointly present the semantic
+action on named implementations and admitted budgets.
 \end{proposition}
 \begin{proof}\leavevmode
 \begin{enumerate}[leftmargin=*,align=left]
-\item \textbf{Construct uniform budget transport.}
+\item \textbf{Construct the uniform semantic operation.}
 For $R=\operatorname{Mon}(L,L')$, \cref{prop:effective-resource-transport}
 gives $(r,I)\mapsto\J r(I)$ and
 $\chi_{\J r(I)}(u)=\chi_I(u\circ r)$ uniformly in $r,I,u$.
 
-\item \textbf{Lift the map to names.}
-Choose the specified projective presentations
-$C_R\onto R$, $C_L\onto\J L$, and $C_{L'}\onto\J L'$.
-Their source product is projective. Applying
-\cref{prop:standalone-name-lifting} to the uniform map yields
-$C_R\times C_L\to C_{L'}$ with the square
-\eqref{eq:named-budget-transport}, retaining the parameter name.
-For dependent substitutions use a partitioned refinement;
-two such presentations are compared on their common refinement.
+\item \textbf{Construct the name cover and its tracked projections.}
+Take the canonical covers $C_R\onto R$, $C_L\onto\J L$,
+and $C_{L'}\onto\J L'$. Pull back $C_{L'}$ along the
+displayed operation on $C_R\times C_L$, then take its canonical
+partitioned cover. Its projections $p,v$ satisfy the family version
+of \eqref{eq:named-budget-transport}, and $p$ is regular epic.
+Specialization gives $\widehat P_r$.
+\[
+\begin{tikzcd}[column sep=large,row sep=large]
+\widehat P_r \arrow[r,"v"] \arrow[d,two heads,"p"'] &
+C_{L'} \arrow[d,two heads,"q_{L'}"]\\
+C_L \arrow[r,"\J r\,q_L"'] & \J L'
+\end{tikzcd}
+\]
 
-\item \textbf{Verify coherence after realization.}
-Identity and composite name maps realize $\J\id$ and $\J(sr)$
-by their commuting squares; positive observations compose by
-substitution of tests. Different lifts may return different names,
-so the equations hold after the specified realization maps.
-Together with the code-output tracker for $\gamma$, this gives
-the named compiler action.
+\item \textbf{Prove exact descent and coherence.}
+The displayed equation makes $q_{L'}v$ constant on the kernel
+pair of $p$, so its unique descent is $\J r\,q_L$.
+Composing the spans by pullback and partitioned refinement denotes
+$\J(sr)$, and the identity span denotes $\J\id$.
+Uniqueness of effective descent proves their semantic equations;
+the positive evaluation equation is substitution of tests.
 \end{enumerate}
 \end{proof}
 
-Neither projective lifting nor the observation equation assigns the
-budget tracker's runtime. A runtime comparison for that operation is
-obtained by retaining and measuring its execution description. Likewise,
-the semantic bound parameter $r$ is supplied data of a comparison; it
-is not computed merely by executing the program transformation $\gamma$.
+The cover retains the output-name witness rather than choosing a
+section over the original input carrier. An actual budget program
+is recorded by its finite implementation description and measured
+history, as for the other operations. The semantic parameter $r$
+and the covered-span equation alone assign no runtime to such a
+program and do not compute $r$ from the compiler code $\gamma$.
+
 
 \subsection{Measured changes of input representation}
 \label{sec:measured-representation-change}
@@ -5683,8 +5915,1020 @@ universal lower-bound analysis.
 
 \label{app:complexity-probe-scope}
 The classifier now describes budget families, their feasible opens,
-and their implementation witnesses. Keeping a measured history fixed
-and varying its valuation gives the resource families studied next.
+and their implementation witnesses. We first instantiate this
+construction for conventional worst-case complexity, then vary
+the valuations of fixed histories to obtain differential resource
+families.
+
+
+\section{Conventional worst-case complexity}
+\label{sec:worst-case}
+
+The measured-span construction now gives a concrete instance for
+deterministic computation on finite binary words. Finite maxima over
+word-length fibres construct its worst-case costs, and the resulting
+resource predicates recover the conventional time and workspace upper
+classes. The polynomial budget is identified with $\mathbf P$ by
+explicit clocks and tape simulations. All finite syntax, numerical
+recursions, images, and quotients are constructed in the fixed
+effective topos $\E$.
+
+The external classes below use ordinary finite machine descriptions
+and represented numerical bounds. Their upper classes are the global
+instances of the internal upper predicates. Universal lower predicates
+retain the distinction between effective witness transformations and
+classical truth; \cref{sec:wc-classical-lower} constructs the exact
+classical reading. We write $\DTIME_{\mathcal T}(O(b))$ to make
+the multiplicative-constant convention explicit, retaining the
+machine model when fine bounds are at issue.
+
+
+\subsection{Finite length fibres and worst-case aggregation}
+
+Write $X=\BinWords$ and $\ell:X\to\N$ for word length.
+
+\begin{construction}[Canonical length fibres and their maxima]
+\label{constr:wc-max}
+\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Enumerate the fibre without choice.}
+Let $E_0$ be the one-element list containing the empty word. Define
+$E_{n+1}$ by prefixing $0$ to each member of $E_n$, followed by the list
+obtained by prefixing $1$. Induction proves that $E_n$ lists each word
+of length $n$ exactly once, has length $2^n$, and is inhabited.
+\item \textbf{Fold by maximum.}
+For $a:X\to\Qplus$, define
+\[
+ (Wa)(n)=\max_{x\in E_n}a(x).
+\]
+Rational order is decidable; a finite fold constructs this value and
+the first word attaining it. Consequently $W:(\Qplus)^X\to(\Qplus)^\N$
+is a constructed arrow. The same fold gives $W:\N^X\to\N^\N$.
+For a parameterized $a:Z\times X\to\Qplus$, apply the identical fold
+while retaining $z$.
+\end{enumerate}
+\end{construction}
+
+For functions use pointwise order. Equip $X$ with its length filter
+and $\N$ with its cofinite filter from \cref{def:cofinite-length-filters}.
+Let $K_X^+,K_\N^+$ be the nonnegative eventual-germ objects, and
+$L_X,L_\N$ their Landau growth posets, abbreviating the
+corresponding $\mathsf L_{\Ev}$ of \cref{def:growth-classes}. Equivalently,
+$a\preceq b$ means that $a\le c b$ on an eventual extent for a
+positive rational constant $c$: rounding $c$ up gives an integer
+constant in the defining relation. As before,
+the growth poset identifies mutual domination. We write $[a]$ for a
+growth class where no ambiguity results.
+
+\begin{theorem}[Worst-case aggregation is left adjoint to length pullback]
+\label{thm:wc-adjunction}
+Precomposition $\ell^*b=b\circ\ell$ and the finite maximum satisfy
+\[
+ W\dashv\ell^*,\qquad W\ell^*=\id,
+ \qquad a\le\ell^*Wa
+\]
+on nonnegative functions. They descend to nonnegative eventual germs
+and to an adjunction of growth posets
+\[
+ W_L:L_X\rightleftarrows L_\N:\ell^*,
+ \qquad
+ W_L[a]\le[b]\ \Longleftrightarrow\ [a]\le\ell^*[b].
+\]
+The right adjoint is fully faithful. The constructions commute with
+substitution of parameters.
+\end{theorem}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Prove the finite-fibre adjunction.}
+For each $n$, the inequality $\max_{x\in E_n}a(x)\le b(n)$ is
+equivalent to $a(x)\le b(n)$ for every $x\in E_n$. Quantifying over
+$n$ gives $Wa\le b$ if and only if $a\le\ell^*b$. Nonemptiness of
+each fibre gives $W\ell^*b=b$. The inequality $a(x)\le Wa(|x|)$
+is the unit. These equations establish the adjunction and its triangle
+identities in the posetal categories.
+\item \textbf{Descend through eventual equality.}
+If $a=a'$ on all words of length at least $N$, the two maxima agree
+for all $n\ge N$. If $b=b'$ for all $n\ge N$, their pullbacks agree
+on that length extent. Thus both operations coequalize the relevant
+kernel pairs and descend through the effective quotients. For the
+eventual order on germs, the same fibrewise equivalence on a common
+tail proves the descended adjunction.
+\item \textbf{Descend the adjunction through Landau domination.}
+For each $c>0$ and $N$,
+\[
+ \forall n\ge N\;Wa(n)\le c b(n)
+ \quad\Longleftrightarrow\quad
+ \forall x\;(|x|\ge N\Rightarrow a(x)\le c b(|x|)).
+\]
+The same witnesses $c,N$ work in both directions. Existentially
+quantifying them proves the displayed adjunction on growth classes.
+Monotonicity of finite maximum also preserves domination between two
+input functions, so both quotient maps are well-defined.
+\item \textbf{Retain the parameter context.}
+Every fold, inequality, cutoff, and witness transformation above is
+performed on the displayed finite fibre with the parameter unchanged.
+The quotient equations are uniform. Substitution therefore commutes
+with the operations and their unit and counit.
+\end{enumerate}
+\end{proof}
+
+For a measured cost map $\Phi_0:P\to\N^X$ as in
+\cref{prop:measured-image}, the construction gives the diagram
+\[
+\begin{tikzcd}[column sep=large,row sep=large]
+P \arrow[r,"\Phi_0"] \arrow[dr,"W\Phi_0"'] &
+ \N^X \arrow[d,"W"]\\
+&\N^\N \arrow[d]\\
+&K_\N^+
+\end{tikzcd}
+\]
+and its semantic input bound is controlled by the unit
+$a\le\ell^*Wa$. This is a finite-fibre left Kan extension in the
+posetal sense.
+
+\begin{proposition}[Algebraic scope of maximum]
+\label{prop:wc-nonlinear}
+Worst-case maximum preserves zero, binary joins, and multiplication by
+pulled-back nonnegative coefficients. It satisfies
+\[
+ W(a+a')\le Wa+Wa',\qquad W(aa')\le(Wa)(Wa').
+\]
+It is not an additive or multiplicative homomorphism in general.
+\end{proposition}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Prove the stated operations fibrewise.}
+For a fixed finite nonempty fibre, maximum commutes with a binary
+maximum. A scalar $b(n)\ge0$ is constant on that fibre and can be
+pulled outside its maximum. Each summand and factor is bounded by
+its respective maximum, giving the two inequalities.
+\item \textbf{Exhibit failure of ring preservation.}
+On nonempty words let $a$ indicate first bit $0$ and $a'$ indicate
+first bit $1$; give both value zero on the empty word. For $n\ge1$,
+\[
+ Wa(n)=Wa'(n)=1,\quad W(a+a')(n)=1,\quad W(aa')(n)=0.
+\]
+Thus the failures persist after eventual equality. The construction
+is used on measured costs, not as a ring map transporting arbitrary
+coefficient algebra.
+\end{enumerate}
+\end{proof}
+
+We use maxima at exactly length $n$. The running maximum over lengths
+at most $n$ need not preserve eventual equality: a single exceptional
+early value can remain the running maximum forever. No such operation
+is used in the descent proof above.
+
+
+\subsection{A measured Turing-machine instance}
+
+\begin{construction}[Finite descriptions, configurations, and execution]
+\label{constr:wc-tm}
+\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Construct the program object.}
+A program is a finite deterministic transition table with a finite
+state set, a finite tape alphabet containing the binary input symbols
+and a blank, and a finite positive number of work tapes. There is one
+read-only input tape with endmarkers. A transition reads the scanned
+symbols, updates the state and work symbols, and moves each head by
+at most one position. Decision programs have two halting states; for
+function computation an append-only output tape is also used.
+Finite-list parsing and finite checks construct the object of valid
+tables. Invalid numerical codes denote a fixed loop. Thus no validity
+oracle is used. We write $\mathcal T$ for this family of machines.
+\item \textbf{Construct configurations and transitions.}
+Represent a work tape by its scanned symbol and two finite lists, with
+nearest cells first, extending an empty list by blank on demand. A
+right move pushes the written symbol onto the left list and pops the
+right list, or reads blank if that list is empty; a left move is
+symmetric. The input word and its bounded head position determine the
+input symbol by finite lookup. Finite table lookup constructs a total
+primitive-recursive map $s_e$ on configurations, an initialization map
+$\operatorname{init}(e,x)$, and a Boolean halting map $h_e$. Halted
+configurations are made absorbing. For decisions, the return map reads
+the halting-state bit.
+\item \textbf{Apply measured finite return.}
+At a nonhalted configuration emit one transition event and continue
+with $s_e(c)$; at a halted configuration return the output. This is a
+finite case-defined body for \cref{thm:weighted-return};
+\cref{thm:history-valuation} records its finite history. The history is the ordered list of simulated transitions.
+Its length is the measured time $T_e(x)$ on the return domain.
+\item \textbf{Construct numerical clocks.}
+Primitive recursion gives $s_e^t(\operatorname{init}(e,x))$. Put
+\[
+ \alpha(e,x,t)=h_e(s_e^t(\operatorname{init}(e,x))).
+\]
+This is a primitive-recursive Boolean predicate on finite codes, words,
+and numerical $t$. Its interpretation counts target-machine transitions;
+it does not identify the target time with the time taken by a numerical
+interpreter computing $\alpha$.
+\end{enumerate}
+\end{construction}
+
+\begin{proposition}[Exact operational and numerical cost adequacy]
+\label{prop:wc-tm-adequacy}
+The constructed evaluator has exactly the ordinary domain and output
+of the encoded machine. Moreover
+\[
+ T_e(x)=t\ \Longleftrightarrow\
+ \alpha(e,x,t)=1\ \wedge\ \forall j<t\;\alpha(e,x,j)=0,
+ \qquad
+ \operatorname{Within}(e,x,t)=\alpha(e,x,t).
+\]
+Both displayed Boolean tests are primitive recursive. The time map is
+partial recursive and has the same domain as machine evaluation.
+\end{proposition}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Identify every transition.}
+Induction on $t$ identifies $s_e^t(\operatorname{init}(e,x))$ with the
+ordinary configuration after $t$ updates, including the absorbing
+convention. The list-stack equations in \cref{constr:wc-tm} implement
+exactly one symbol update and one permitted head displacement.
+\item \textbf{Identify first return and cost.}
+A least successful clock stage has exactly that many preceding
+nonhalted updates. Each contributes one event. Its return value is the
+ordinary halted value, so the finite-return evaluator has the same
+domain, output, and time. Bounded conjunction gives the first-hit test.
+\item \textbf{Construct the total implementation subobject.}
+For decision programs set
+\[
+ P=\{e:\forall x\in\BinWords\;\exists t\;\alpha(e,x,t)=1\}.
+\]
+This is an $\Truth$-classified subobject of codes. Restricted to
+$P\times\BinWords$, evaluation and time are total, and transpose to
+$p_0:P\to2^{\BinWords}$ and $\Phi_0:P\to\N^{\BinWords}$.
+As in \cref{prop:measured-image}, let $P\onto V\incl2^{\BinWords}$
+be the image factorization of $p_0$. These letters denote the
+fixed Turing-machine instance throughout this section.
+No algorithm recognizing $P$ has been used or asserted.
+\end{enumerate}
+\end{proof}
+
+These are the two numerical measure properties used by \citet{Blum1967MachineIndependentComplexity},
+now proved for the bit-input instance. Universal interpretation and
+machine simulation are separate measured algorithms; quantitative
+simulation is addressed in \cref{sec:wc-simulation}.
+
+\begin{proposition}[Uniform execution of the worst-case profile]
+\label{prop:wc-profile-clock}
+Define the primitive-recursive predicate
+\[
+ \beta(e,n,t)=\bigwedge_{x\in E_n}\alpha(e,x,t).
+\]
+Its first-hit search has domain precisely the program--length pairs on
+which all inputs of length $n$ halt. On this domain it returns
+\[
+ W_e(n)=\max_{|x|=n}T_e(x).
+\]
+In particular $e\mapsto W_e$ is a total arrow $P\to\N^\N$.
+\end{proposition}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Identify the return domain.}
+A successful stage supplies a halting bound for every word in $E_n$.
+Conversely, finitely many halting witnesses have a maximum by finite
+induction, which makes $\beta$ true. This uses finite existential
+elimination, not an axiom of choice.
+\item \textbf{Identify the first successful stage.}
+Absorption of halted states gives
+$\beta(e,n,t)=1$ exactly when all the individual first-hit times are at
+most $t$. Their maximum is attained and is therefore the least such
+$t$, including the case $t=0$.
+\item \textbf{Retain totality and parameters.}
+For $e\in P$ the domain statement holds for every $n$, so restriction
+and transposition yield the total profile map. The program searches
+successive $t$ and evaluates the finite Boolean conjunction; it does
+not first decide whether $e$ belongs to $P$. All equations are uniform
+in additional parameters.
+\end{enumerate}
+\end{proof}
+
+The value $W_e(n)$ is the maximum of target execution times, not the
+running time of the procedure calculating that maximum. The latter may
+enumerate exponentially many inputs. No efficient cost-analysis oracle
+is asserted by \cref{prop:wc-profile-clock}.
+
+
+\subsection{Worst-case resource predicates}
+
+Let $B_\N\incl K_\N$ be the bounded numerical germ ring and its
+ambient germ algebra. Define the new measured span using the same
+implementations and denotations:
+\[
+ V\xleftarrow{p}P\xrightarrow{\Phi^{\mathrm{wc}}}K_\N,
+ \qquad \Phi^{\mathrm{wc}}(e)=[W_e]_{\mathrm{ev}}.
+\]
+Write $\kappa^{\mathrm{wc}}(e)=[W_e]\in L_\N$.
+
+\begin{theorem}[Conventional worst-case predicates]
+\label{thm:wc-classes}
+For a numerical nonnegative bound $b$, put
+$I_b=\downarrow[b]$ and $M_b=B_\N[b]_{\mathrm{ev}}$. Then
+\begin{align*}
+ Z_b^{\mathrm{wc}}&=P\times_{K_\N}M_b,\\
+ \mathcal C^{\mathrm{wc}}(I_b)&=\im(Z_b^{\mathrm{wc}}\to V),\\
+ v\in\mathcal C^{\mathrm{wc}}(I_b)
+ &\Longleftrightarrow \exists e\in P_v\;W_e=O(b).
+\end{align*}
+For the Turing-machine instance and Boolean denotations, its external
+class is exactly $\DTIME_{\mathcal T}(O(b))$. Its lower and tight
+predicates are, respectively,
+\[
+ \forall e\in P_v\; b=O(W_e),
+ \qquad
+ (\exists e\in P_v\;W_e=O(b))\ \wedge\
+ (\forall e\in P_v\;b=O(W_e)).
+\]
+The associated feasibility open is
+\[
+ \mathcal U_v^{\mathrm{wc}}=\bigvee_{e\in P_v}U_{[W_e]}.
+\]
+Internally, \cref{prop:bounds-as-opens,thm:optimization-compactness}
+give its exact characterizations of upper bounds, lower bounds,
+optimal implementations, and finite dominating portfolios, with
+$\kappa^{\mathrm{wc}}$ in place of the inputwise cost map.
+\end{theorem}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Construct witnesses before the feasibility image.}
+The pullback selects precisely the codes with $\Phi^{\mathrm{wc}}(e)\in M_b$.
+By \cref{lem:bounded-division}, membership is exactly
+$W_e=O(b)$. The image over $p$ is the displayed existential
+predicate. In diagram form,
+\[
+\begin{tikzcd}[column sep=large,row sep=large]
+ Z_b^{\mathrm{wc}} \arrow[r] \arrow[d] &M_b \arrow[d,hook]\\
+ P \arrow[r,"\Phi^{\mathrm{wc}}"'] \arrow[d,two heads,"p"'] &K_\N\\
+ V&
+\end{tikzcd}
+\]
+\item \textbf{Identify the conventional class.}
+By \cref{prop:wc-tm-adequacy}, the costs are exactly the chosen machine's
+step counts. By \cref{thm:wc-adjunction}, $W_e=O(b)$ is exactly the
+uniform asymptotic bound on all strings of each sufficiently large
+length. The index $e$ ranges over all total decision programs in that
+model. These are precisely the defining quantifiers of
+$\DTIME_{\mathcal T}(O(b))$. Conventional definitions are recorded,
+for example, in \citet[Chapter 13]{BarakRunningTime}.
+\item \textbf{Construct lower bounds using the same implementation fibre.}
+Apply $\forall_p$ to the subobject defined by $b=O(W_e)$.
+Its formula is the displayed lower predicate. Intersect this subobject
+of $V$ with the upper subobject for the tight predicate. No uniform lower
+constant across different implementations is introduced.
+\item \textbf{Identify the locale and its optimization predicates.}
+Apply the universal budget-family construction to the displayed
+span. Each implementation contributes $U_{[W_e]}$; taking its image
+gives the indicated join. Principal-open order reflection
+$U_c\subseteq U_a\iff a\le c$ proves the upper and lower inclusion
+formulas. Supercompactness of this join is equivalent to one member
+covering it, hence to an $O$-optimal implementation. Compactness is
+equivalent to a finite dominating subfamily, by the same principal-open
+argument. All constructions use pullbacks and images and retain parameters.
+\end{enumerate}
+\end{proof}
+
+\begin{proposition}[The quantifiers in a worst-case lower bound]
+\label{prop:wc-lower}
+The preceding lower predicate is exactly
+\[
+ \forall e\in P_v\ \exists c\in\N_{>0}\ \exists N\ \forall n\ge N\
+ \exists x\in E_n:\quad b(n)\le cT_e(x).
+\]
+It does not require the inequality on every input of length $n$.
+The infinitely-often version is obtained by replacing
+$\exists N\,\forall n\ge N$ with $\forall N\,\exists n\ge N$,
+while retaining the implementation quantifier and its constant.
+These equivalences hold internally with witnesses, as well as for the
+displayed formulas read externally in classical logic. They do not identify
+classical truth with realizability of a universally quantified formula;
+\cref{sec:wc-classical-lower} supplies that separate exact identification.
+\end{proposition}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Extract a maximizer constructively.}
+The finite fold in \cref{constr:wc-max} returns the first maximizing
+word. Therefore $b(n)\le cW_e(n)$ implies the displayed inequality
+for that word; the reverse implication follows from $T_e(x)\le W_e(n)$.
+Positive rational constants can be rounded up to positive integers.
+The transformations retain $e,c,N,n$.
+\item \textbf{Check the distinction from inputwise lower bounds.}
+For $n\ge1$, the profile equal to $n+1$ on words beginning with $0$
+and to $(n+1)^2$ on words beginning with $1$ has worst-case profile
+$(n+1)^2$, but has no inputwise quadratic lower bound. This distinction
+also occurs for actual Turing-machine time: scan the input, remember
+its first bit, and halt immediately after the scan on the $0$ branch;
+on the $1$ branch first construct the unary clock of $(n+1)^2$ marks
+given in \cref{thm:wc-p}, then halt. The first branch takes
+$\Theta(n+1)$ time and the second $\Theta((n+1)^2)$, the latter
+lower bound following from the number of marks written. The empty
+word is handled by a fixed halting branch. Thus even conventional
+time has distinct inputwise and worst-case lower predicates.
+\item \textbf{Retain the infinitely-often quantifiers.}
+The equivalence at each $e,c,n$ permits the indicated quantifier
+substitution. Externally, classical failure of an $O(b)$ upper bound
+has formula $\forall c\,\forall N\,\exists n\ge N:
+W_e(n)>cb(n)$. Internally, we retain direct witness formulas rather
+than using this classical quantifier-negation rule. None of these
+statements is silently interchanged with an eventual lower bound.
+\end{enumerate}
+\end{proof}
+
+
+\subsection{The classical reading of universal lower bounds}
+
+\label{sec:wc-classical-lower}
+
+The realizability clauses for universal and existential quantification
+retain a procedure that produces witnesses, as in
+\citet[Section 5]{Kleene1945}. Thus the internal formula
+$\forall e\in P_v\,\exists c,N\,\forall n\ge N\;
+b(n)\le cW_e(n)$ includes effective dependence of $c,N$ on a name of
+the implementation and its membership evidence. Conventional classical
+lower bounds assert existence separately for each implementation.
+Neither notion asks for one constant shared by all implementations.
+
+\begin{construction}[Close the relation before quantifying]
+\label{constr:wc-classical-lower}
+\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Construct the implementationwise relation.}
+For the displayed numerical bound $b$, form the subobject
+\[
+ R_b=\{e\in P:b=O(W_e)\}\incl P.
+\]
+Its characteristic arrow is an ordinary $\Truth$-valued arrow.
+\item \textbf{Apply the existing double-negation closure.}
+Put $j(q)=\neg\neg q$ on $\Truth$ and let $j_P R_b$ be the
+subobject classified by $j\chi_{R_b}$. The intuitionistic identities
+$q\Rightarrow j(q)$, $j(j(q))=j(q)$, and
+$j(q\wedge q')=j(q)\wedge j(q')$ make this the double-negation
+Lawvere--Tierney closure. It is defined in the existing topos; no
+principle $j(q)\Rightarrow q$ is added. The two characteristic
+pullbacks are
+\[
+\begin{tikzcd}[column sep=large,row sep=large]
+ R_b \arrow[r] \arrow[d,hook] &1 \arrow[d,"\top"]
+   &j_P R_b \arrow[l] \arrow[d,hook]\\
+ P \arrow[r,"\chi_{R_b}"'] &\Truth
+   &P \arrow[l,"j\chi_{R_b}"]
+\end{tikzcd}
+\]
+See also
+\citet[Proposition 4.4]{Hyland1982EffectiveTopos} for the classical sheaf interpretation.
+\item \textbf{Quantify over implementations afterwards.}
+Define the subobject of denotations
+\[
+ \mathsf{Low}^{\mathrm{cl}}_b=\forall_p(j_P R_b),\qquad
+ \mathsf{Low}^{\mathrm{cl}}_b(v)\equiv
+ \forall e\in P_v\;\neg\neg\bigl(b=O(W_e)\bigr).
+\]
+Intersect this subobject with the previously constructed upper subobject
+for the classical tight predicate. The closure is deliberately inside
+the universal quantifier; $j(\forall_pR_b)$ is a different expression.
+\end{enumerate}
+\end{construction}
+
+\begin{theorem}[Exact classical lower predicate]
+\label{thm:wc-classical-lower}
+For a global denotation $v$ and global represented bound $b$, global
+validity of $\mathsf{Low}^{\mathrm{cl}}_b(v)$ is equivalent to the
+ordinary classical statement
+\[
+ \forall\text{ total machine codes }e\text{ computing }v\quad
+ \exists c\in\N_{>0}\ \exists N\ \forall n\ge N:
+ b(n)\le cW_e(n).
+\]
+The original predicate $\forall_pR_b$ retains the stronger requirement
+of an effective witness transformation. Upper-class membership needs
+no such closure. The same construction identifies the classical
+infinitely-often lower predicate exactly.
+\end{theorem}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Identify the pointwise realizability relation.}
+Fix an actual total program $e$. Its membership in $P$ is realized by
+the program that searches its halting clock on each input. For fixed
+$c,N$ satisfying the displayed inequality, evaluation of $b$ and the
+total profile $W_e$ realizes every numerical inequality on the tail,
+uniformly in $n$. Conversely any realizer of $R_b(e)$ supplies such
+$c,N$ and valid inequalities. Thus $R_b(e)$ has a realizer exactly
+when the classical eventual bound holds. Membership in $P_v$ is
+similarly exactly extensional equality with the given denotation,
+together with totality; no decision procedure for that membership
+is inferred.
+\item \textbf{Calculate double negation on truth-value realizers.}
+In the Kleene realizability presentation, a truth value is represented
+by a set $A\subseteq\N$. A realizer of $A\Rightarrow\varnothing$
+is a partial-recursive index that sends every member of $A$ to an
+element of the empty set. Consequently, in the classical metatheory,
+\[
+ \neg A=\begin{cases}\N,&A=\varnothing,\\
+                         \varnothing,&A\ne\varnothing,
+         \end{cases}
+ \qquad
+ jA=\begin{cases}\varnothing,&A=\varnothing,\\
+                         \N,&A\ne\varnothing.
+         \end{cases}
+\]
+These are calculations in the realizability model, not an internal
+double-negation-elimination rule. Relative subobject predicates also
+retain the given realizer of their ambient element.
+\item \textbf{Prove both directions of the external characterization.}
+If every code in the classical fibre satisfies the eventual bound,
+step (1) makes each relevant realizer set nonempty. Step (2) gives
+one fixed realizer for its double negation. A constant procedure,
+retaining the ambient implementation name where necessary, therefore
+realizes the universally quantified closed predicate. Conversely a
+realizer of that predicate gives an inhabited $jR_b(e)$ at every
+actual implementation. By step (2), $R_b(e)$ is inhabited, and
+step (1) gives the classical eventual bound. No procedure choosing
+its witnesses from $e$ has been asserted in this converse.
+\item \textbf{Check upper and infinitely-often predicates.}
+For a principal upper-class witness there is one code $e$ and one pair
+$c,N$. A correct total decider supplies its totality realizer by
+clock search; numerical bounds with these witnesses have realizers
+by computation. Conversely a realizer supplies the code and bounds.
+Hence the existing upper image has exactly the classical upper class.
+For an infinitely-often lower relation, fix its constant $c$ and
+search $n\ge N$ until the decidable inequality holds. Classical
+truth guarantees termination for each $N$, so this realizes
+$\forall N\,\exists n\ge N$. The implementationwise relation
+again has a realizer exactly when its classical statement holds;
+steps (2)--(3) apply unchanged.
+\end{enumerate}
+\end{proof}
+
+\begin{proposition}[A computable family with no effective cutoff selector]
+\label{prop:wc-cutoff-selector}
+There is a primitive-recursive family of positive numerical profiles
+$a_e(n)$ such that, classically, $n+1=O(a_e(n))$ for every $e$, but
+no total recursive procedure returns a valid domination constant and
+cutoff uniformly in $e$. Thus the distinction between pointwise
+classical existence and a realized universal statement cannot be
+discarded for general measured profiles.
+\end{proposition}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Construct a single possible exceptional length.}
+Let $H(e,n)$ be the bounded Boolean test that machine $e$, on empty
+input, halts for the first time at update $n$. Set
+\[
+ a_e(n)=\begin{cases}1,&H(e,n)=1,\\ n+1,&H(e,n)=0.\end{cases}
+\]
+This is primitive recursive in $e,n$. At most one length is
+exceptional. For each $e$ the classical eventual bound therefore
+holds with constant $1$, and with cutoff $h+1$ if its halting time
+is $h$, or cutoff $0$ if it never halts.
+\item \textbf{Derive a halting decider from a proposed selector.}
+Suppose a total recursive procedure supplied valid positive integer
+$c_e$ and cutoff $N_e$. Put $M_e=\max(c_e,N_e)$. A first halting
+time $h\ge M_e$ would give
+$h+1>c_e a_e(h)=c_e$ at a length $h\ge N_e$, a contradiction.
+Thus the machine halts if and only if it halts before $M_e$ updates.
+Computing $M_e$ and checking these finitely many updates would
+decide the halting problem. No such selector exists.
+\item \textbf{Identify the scope of the example.}
+These are uniformly computable numerical profiles. They can also
+be realized as tagged-event valuations by computing $a_e(|x|)$ and
+then emitting that many counted events. They are not asserted to be
+the complete running times of that computing procedure. The example
+establishes the logical obstruction for the general resource
+framework, while \cref{thm:wc-classical-lower} already gives the exact
+classical predicate for the actual Turing-time instance.
+\end{enumerate}
+\end{proof}
+
+The same placement of closure handles ordinary external optimality:
+for a candidate $e_0$, use
+$\forall e\in P_v\,\neg\neg(W_{e_0}=O(W_e))$. For a displayed
+finite portfolio, close the relation
+$\exists i\,(W_{e_i}=O(W_e))$ before quantifying over $e$.
+A true instance has a finite index and numerical witnesses, so the
+same proof applies. \Cref{thm:optimization-compactness} continues to characterize
+the original internal witness-preserving predicates;
+one must not replace their internal quantifiers by classical ones
+without this explicit interpretation.
+
+
+\subsection{Polynomial budgets and clocked programs}
+
+Set $b_d(n)=(n+1)^d$ and form the ascending union
+\[
+ I_{\mathrm{poly}}=\bigcup_{d\in\N}\downarrow[b_d],
+ \qquad M_{\mathrm{poly}}=\bigcup_{d\in\N}B_\N[b_d]_{\mathrm{ev}}.
+\]
+The explicit inclusions $b_d\le b_{d+1}$ construct an inhabited
+directed ideal and its resource module.
+
+\begin{theorem}[Exact polynomial-time class]
+\label{thm:wc-p}
+In the Turing-machine instance,
+\[
+ \mathcal C^{\mathrm{wc}}(I_{\mathrm{poly}})=\mathbf P_{\mathcal T}.
+\]
+The polynomial-time denotations have an explicit numerical presentation
+by clocked finite machine descriptions.
+\end{theorem}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Expand the ideal membership.}
+The left-hand side has formula
+\[
+ \exists e\in P_v\ \exists d\ \exists c\in\N_{>0}\ \exists N\
+ \forall n\ge N:\quad W_e(n)\le c(n+1)^d.
+\]
+These are exactly the polynomial-time quantifiers for the fixed model.
+The exponent and constant may depend on the implementation, not on
+the input length.
+\item \textbf{Absorb finite exceptions by a finite computation.}
+Given witnesses $e,d,c,N$, compute the finitely many $W_e(n)$ for
+$n<N$ by \cref{prop:wc-profile-clock}. Let $c'$ be the maximum of $1,c$ and
+these values, and set $d'=\max(1,d)$. Since $(n+1)^{d'}\ge1$,
+\[
+ \forall n:\quad W_e(n)\le c'(n+1)^{d'}.
+\]
+This constructs a global polynomial bound from an asymptotic bound
+with its witnesses; it does not search for such witnesses from an
+arbitrary program.
+\item \textbf{Construct a polynomial clock.}
+For fixed positive integers $c,d$, copy unary $n+1$ onto $d$ counter
+tapes and enumerate the $d$-tuples of positions in these tapes in
+lexicographic order. Write $c$ tally marks per tuple. This produces
+a unary clock of length $c(n+1)^d$. Advancing the last counter costs
+one move; on a carry it is reset by a scan of $n+1$ cells. The total
+reset work over all carries is bounded by a constant depending on
+$c,d$ times $(n+1)^d$: at depth $j$ there are at most
+$(n+1)^{d-j}$ resets of length $n+1$, and the finite sum of these
+terms has that bound. Initialization costs $O(d(n+1))$. Thus the
+clock is constructed in $O(c(n+1)^d)$ time for its fixed description.
+Rewind the clock to its first mark and the input to its initial
+position; this costs $O(c(n+1)^d+n+1)$ and is absorbed by the same
+bound because $c,d\ge1$.
+\item \textbf{Compile a total clocked decision program.}
+For any program $e$, produce a program $\operatorname{Clock}(e,c,d)$
+which builds this clock and then executes at most $c(n+1)^d$ target
+transitions, consuming one clock mark per transition. It checks for
+halting also after the last permitted transition. It returns the
+target's Boolean value on timely halting, and returns $0$ on timeout.
+The transition table of $e$ is incorporated into the compiled finite
+control, with an extra clock tape, so the simulation overhead per
+target transition is bounded by a constant for that compiled program.
+Code generation is effective and total. Every such clocked program
+halts in polynomial time, including when $e$ is invalid or partial.
+The degree belongs to the fixed compiled description; this does not
+assert one polynomial degree for an interpreter taking $d$ as input.
+\item \textbf{Prove surjectivity onto the class.}
+Every clocked description denotes a member of $\mathbf P_{\mathcal T}$.
+For every polynomial-time implementation, step (2) supplies clock
+parameters for which timeout never changes its result. Thus the
+denotation map from triples $(e,c,d)$ has image exactly that class.
+Pairing the positive parameters gives a numerical presentation.
+The construction makes no assertion that equality of its denotation
+with an arbitrary supplied program is semidecidable.
+\end{enumerate}
+\end{proof}
+
+The clocks supply concrete algorithms, rather than an additional
+``time-constructibility'' premise for these polynomial bounds. For
+other explicitly specified clock programs, the same construction
+records their actual generation cost; an arbitrary computable bound
+is not declared to be computable within its own value.
+
+
+\subsection{Machine models, simulations, and encodings}
+\label{sec:wc-simulation}
+
+The numerical execution instance of \cref{constr:numerical-execution}
+uses increment, zero-test with decrement, jumps, and halt. Computability adequacy of this set does not
+establish binary-input polynomial-time adequacy. The obstruction can be
+proved directly for its usual numeric input convention.
+
+\begin{proposition}[Numeric counters do not supply binary-time adequacy]
+\label{prop:wc-counter}
+Let a counter program start with $R_0=N$ and every other register zero,
+use only the four instructions just listed, and return the number in a
+designated register. Every total program returning $N\bmod 2$ takes at
+least $N$ updates on input $N\geq1$. In contrast, a binary-input Turing
+machine computes the same function in linear time in the bit length.
+Consequently no polynomial-overhead compiler from binary-input Turing
+machines to this numeric counter convention can preserve these inputs
+and outputs.
+\end{proposition}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Couple adjacent inputs before the smaller counter reaches zero.}
+Suppose the run on $N$ halts after $t<N$ updates. Throughout these
+updates its $R_0$ is at least $N-t>0$. The runs on $N$ and $N+1$ have
+the same control state and the same other registers; their $R_0$ values
+differ by one. Induction proves this invariant because every zero test
+on $R_0$ takes its nonzero branch in both runs, and all other tests have
+identical operands.
+\item \textbf{Contradict Boolean parity output.}
+The second run therefore halts at the same time. If the output register
+is different from $R_0$, the outputs agree, contradicting parity. If it
+is $R_0$, the second output is at least two, contradicting Boolean
+output. Thus $t<N$ is impossible.
+\item \textbf{Read the binary input directly.}
+A Turing machine scans a nonempty binary numeral to its right end,
+retains the last bit in its finite control, and returns it. This uses
+$O(m+1)$ updates for an $m$-bit numeral. Inputs $N=2^{m-1}$ already
+force at least $2^{m-1}$ updates in the counter model. No polynomial in
+$m$ can bound those runs.
+\end{enumerate}
+\end{proof}
+
+The input convention is part of this proposition, not a claim about
+counter machines with additional bit-reading primitives or input tapes.
+The repair for conventional complexity is to construct the bit-input
+machine instance, while retaining the numeric counter instance for its
+own stated measurement. General machine-independent structural theorems
+do not identify the complexity of an individual function across arbitrary
+encodings; this distinction is already explicit in \citet{Blum1967MachineIndependentComplexity}.
+
+\begin{proposition}[Constructed polynomial-overhead tape simulation]
+\label{prop:wc-tape}
+Every fixed multitape decision machine $e$ has an effectively
+constructed single-work-tape simulator $S(e)$, preserving its input,
+return domain, and Boolean result, with
+\[
+ T_{S(e)}(x)\le C_e\bigl(|x|+T_e(x)+1\bigr)^2
+\]
+on the return domain. A one-work-tape machine is already a special
+case of the multitape family. Consequently their polynomial-time
+classes are equal.
+\end{proposition}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Encode the finitely many tapes and heads.}
+Use one finite block per simulated work tape, separated by delimiters,
+with one marked cell for its head and explicit boundary blanks. The
+simulated state lies in finite control. The input head can be retained
+on the simulator's read-only input tape. After $t$ transitions the
+encoded work blocks have length $O_e(t+1)$; copying input onto work
+storage in a single-total-tape convention instead gives
+$O_e(|x|+t+1)$, which is also covered by the stated bound.
+\item \textbf{Implement a simulated transition by sweeps.}
+A sweep reads the finitely many marked symbols into finite control.
+The compiled transition table determines the new symbols and moves.
+A further sweep updates marks and symbols. If a block needs a new
+boundary cell, shift the finite suffix once. A fixed number of sweeps
+and shifts costs at most $C_e(|x|+t+1)$ moves. Every such operation
+is a finite transition-table construction.
+\item \textbf{Sum the bound and prove adequacy.}
+Induction shows that the encoded configuration after each complete
+sweep cycle is the target configuration. Initialization costs
+$O_e(|x|+1)$. Summing the sweep bounds for $t<T_e(x)$ gives the
+displayed quadratic bound. A nonhalting target never reaches a
+simulated halting configuration. If $T_e$ is polynomial in input
+length, so is the simulator time. The reverse inclusion uses the
+literal one-work-tape inclusion.
+\end{enumerate}
+\end{proof}
+
+The sharper two-tape construction of \citet{HennieStearns1966}
+gives a logarithmic rather than quadratic simulation overhead; it can
+be cited when that sharper quantitative statement is needed. The
+explicit quadratic construction above suffices to identify the
+polynomial budget with conventional $\mathbf P$. Neither statement
+identifies fine bounds such as linear time on different tape models.
+
+\begin{proposition}[Finite-alphabet and bit-length encodings]
+\label{prop:wc-encoding}
+A finite input alphabet $A$, specified by a list of distinct symbols, has a
+fixed-block binary encoding, with linear-time encoder, decoder, and
+image test. Under this encoding its polynomial-time decision class
+is exactly the binary class restricted to encoded words. The encoding
+$x\mapsto\operatorname{bin}^{-1}(1x)$ of binary words as positive
+integers has bit length $|x|+1$; the bit-string conversions are linear.
+\end{proposition}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Construct the block code.}
+Choose the least positive $d$ with $2^d\ge\max(1,|A|)$ and send
+the $i$th symbol to the $d$-bit numeral for $i$. The given finite list
+determines this assignment without choice. A finite-state parser
+checks block boundaries and unused codes. It rejects invalid strings
+and otherwise decodes one symbol per block. The output length is
+$d|x|$, and both conversions take linear time.
+\item \textbf{Compose the machines with their conversions.}
+Encoding then running a binary machine, or decoding then running an
+$A$-machine, preserves polynomial time by the linear length relation
+and the composition construction in \cref{prop:wc-composition}.
+Invalid binary encodings can be rejected in linear time. These give
+both directions of the class statement.
+\item \textbf{Separate bit encoding from numeric counter access.}
+Prefixing a $1$ gives the standard binary numeral of an integer
+$N\in[2^{|x|},2^{|x|+1})$; removing its first bit is the inverse.
+As string operations they are linear. Loading the value $N$ into a
+unit increment/decrement input register gives the different interface
+of \cref{prop:wc-counter}; the length identity does not make that
+interface a polynomial-time bit reader.
+\end{enumerate}
+\end{proof}
+
+
+\subsection{Composition and conventional reductions}
+
+For function programs use an append-only binary output tape, initially
+empty, with at most one bit written per target transition. Therefore
+$|f(x)|\le T_f(x)$ on return. Define
+$\overline W_g(m)=\max_{j\le m}W_g(j)$ on actual total cost functions.
+This running maximum is used before quotienting; no descent to
+eventual-equality germs is claimed for it.
+
+\begin{proposition}[A quantitative composition compiler]
+\label{prop:wc-composition}
+There is an effective code constructor for $g\circ f$ with
+\[
+ W_{g\circ f}(n)
+ \le C_{f,g}\bigl(n+1+W_f(n)+\overline W_g(W_f(n))\bigr).
+\]
+In particular, polynomial-time function programs are closed under
+composition. Polynomial-time many-one reductions preserve membership
+in the polynomial-time decision class.
+\end{proposition}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Compile the sequential execution.}
+Rename and separate the finitely many work tapes of the two programs.
+Run $f$ and record its output on a work tape. Rewind that tape and
+use it as the simulated input for $g$. The fixed transition tables
+are incorporated into the compiled finite control. This costs at
+most a fixed constant times
+$|x|+1+T_f(x)+|f(x)|+T_g(f(x))$.
+Its domain and returned value are exactly those of the composite.
+\item \textbf{Take the appropriate maxima.}
+The output-length bound gives $|f(x)|\le W_f(n)$ for $|x|=n$.
+Hence $T_g(f(x))\le\overline W_g(W_f(n))$. Taking the finite
+maximum in the preceding estimate gives the stated inequality.
+\item \textbf{Construct polynomial bounds and reductions.}
+For global nondecreasing polynomial bounds $p,q$, the right side is
+bounded by $C_{f,g}(n+1+p(n)+q(p(n)))$. Such global bounds are obtained
+from asymptotic witnesses by the finite-exception procedure in
+\cref{thm:wc-p}. If $r$ is a polynomial-time many-one reduction from
+a language $A$ to $B$, compose its machine with a polynomial-time
+decider for $B$. The defining equality
+$\chi_A=\chi_B\circ r$ proves correctness, and the bound proves
+polynomial time.
+\end{enumerate}
+\end{proof}
+
+The final equality is semantic correctness; the displayed machine
+construction supplies the implementation and its overhead. In
+particular, an arbitrary semantic arrow is never declared to be a
+polynomial-time compiler merely because it has a tracker. This same
+separation between names, denotations, and measured execution is
+central to \citet{KawamuraCook2012Operators}.
+
+
+\subsection{Workspace and simultaneous constraints}
+
+\begin{construction}[Conventional workspace and its worst-case profile]
+\label{constr:wc-space}
+\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Record precisely the counted cells.}
+Use the read-only-input, work-tape decision convention from
+\cref{constr:wc-tm}. For each work tape, retain the current integer head
+position and the least and greatest positions visited. Initially they
+are all zero. A transition updates these three integers by addition,
+minimum, and maximum. Since heads move by at most one, the visited
+cells form the interval between the two extrema. The number of work
+cells visited is the sum of the interval lengths over the finitely
+many work tapes. The input tape is excluded. These counters describe
+the history measurement; they are not additional work tapes charged
+to the simulated program.
+\item \textbf{Fold the returning history.}
+On a finite halted history, the final visited-cell count is the peak
+count because the visited sets only grow. Define this value to be
+$S_e(x)$. It is a total finite fold of the history and is defined on
+exactly the return domain. On total implementations it gives
+$P\to\N^X$. Apply $W$ to obtain
+$S_e^{\mathrm{wc}}(n)=\max_{|x|=n}S_e(x)$.
+\item \textbf{Keep one implementation witness for joint bounds.}
+Use the paired measurement
+$(\Phi_T^{\mathrm{wc}},\Phi_S^{\mathrm{wc}}):P\to K_\N\times K_\N$.
+For budgets $M_b,M_s$, first form
+$P\times_{K_\N\times K_\N}(M_b\times M_s)$, then take its
+image under $p$. This imposes both bounds on the same program.
+\end{enumerate}
+\end{construction}
+
+\begin{theorem}[Exact deterministic space and joint-resource classes]
+\label{thm:wc-space}
+The space-only feasibility image of $M_s$ is exactly
+$\DSPACE_{\mathcal T}(O(s))$. The joint image is exactly the
+class of problems with one total decision program satisfying both
+the worst-case time bound $O(b)$ and the worst-case work-space bound
+$O(s)$. In particular its defining predicate retains a single
+implementation witness for both resources.
+\end{theorem}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Identify the measurement with conventional workspace.}
+Induction on the history identifies the recorded extrema with the
+actual visited positions. Unit head moves make each visited set an
+interval, so its cardinality is exactly the recorded length. This
+proves equality with the declared conventional work-space count.
+\item \textbf{Apply finite maxima and bounded division.}
+The finite-maximum adjunction gives
+$S_e=O(s\circ\ell)$ if and only if $S_e^{\mathrm{wc}}=O(s)$.
+Membership in $M_s$ is exactly this condition. Existential image
+over $p$ gives the stated space class.
+\item \textbf{Retain the shared witness.}
+The paired pullback has formula
+$\exists e\in P_v\,[W_e=O(b)\wedge S_e^{\mathrm{wc}}=O(s)]$.
+Separate images instead give
+$(\exists e\in P_v\,W_e=O(b))\wedge
+(\exists e'\in P_v\,S_{e'}^{\mathrm{wc}}=O(s))$.
+The construction has the former formula; it makes no inference
+interchanging these quantifiers.
+\end{enumerate}
+\end{proof}
+
+
+\subsection{Finite portfolios in the conventional time instance}
+
+\Cref{thm:optimization-compactness} applies to arbitrary fixed
+measurements. In the usual time setting there is an additional
+construction, finite racing. To account explicitly for input copying,
+let $e^+$ be the program that scans the input to its end and back
+before running $e$. Put $\tau_e=T_{e^+}$ and
+$\widehat W_e=W(\tau_e)$. This constructs constants independent of
+$x$ with
+\[
+ |x|+1+T_e(x)\le C\tau_e(x),\qquad
+ \tau_e(x)\le C(|x|+1+T_e(x)).
+\]
+An extra fixed transition handles the empty word. This scan-prefixed
+instance has the same polynomial-time class. It also has the same
+$O(b)$ time class whenever $b(n)\ge n+1$ eventually. These assertions
+follow directly from the two inequalities.
+
+\begin{proposition}[Finite racing and optimality]
+\label{prop:wc-race}
+For a nonempty finite list of total programs $e_1,\ldots,e_k$ with
+the same Boolean denotation, an effective scan-prefixed racing program
+$r$ has that denotation and satisfies
+\[
+ \widehat W_r(n)\le C_{e_1,\ldots,e_k}
+                  \min_i\widehat W_{e_i}(n).
+\]
+For a computable denotation in this scan-prefixed multitape time
+instance, a finite asymptotically dominating portfolio exists if and
+only if an asymptotically optimal program exists. Its feasibility open
+is therefore compact if and only if it is supercompact.
+\end{proposition}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Construct the finite parallel machine.}
+Allocate separate work-tape blocks and an input copy for each of the
+finitely many machines. Copying the input costs $O_k(n+1)$. Their
+finite control states form a finite product. Execute one transition
+of each machine per round and stop when the first halts. Because the
+list and its tape counts are fixed in this compiled machine, each
+round has constant cost depending only on the list. Every returned
+bit is correct, since all components have the same denotation.
+\item \textbf{Bound the race before taking worst cases.}
+The cost is at most $C(n+1+\min_i\tau_{e_i}(x))$.
+Every scan-prefixed competitor already pays for $n+1$, so a further
+scan prefix for the race is absorbed into the same constant. Thus
+$\tau_r(x)\le C'\min_i\tau_{e_i}(x)$. For each $i$ this is at
+most $C'\tau_{e_i}(x)$; taking maxima gives
+$\widehat W_r(n)\le C'\widehat W_{e_i}(n)$ for every $i$, hence
+the displayed finite minimum bound.
+\item \textbf{Collapse a finite dominating portfolio to one program.}
+For any competing program $e$, domination supplies some $i$ with
+$\widehat W_{e_i}=O(\widehat W_e)$. The racing bound then gives
+$\widehat W_r=O(\widehat W_e)$. Hence $r$ is optimal. An optimal
+program gives a one-element dominating portfolio. Applying the
+principal-open characterizations in \cref{thm:wc-classes} proves the
+compactness statement. For a computable denotation the portfolio
+cannot be empty; an empty implementation fibre is a separate case.
+\end{enumerate}
+\end{proof}
+
+This proposition is specific to the constructed time instance. It
+does not assert that racing preserves the best space usage, that
+arbitrary event valuations support this inequality, or that two-tape
+and unrestricted-multitape optimality agree up to a constant factor.
+The polynomial-overhead simulation theorem is sufficient for
+$\mathbf P$, but its overhead cannot be discarded in fine optimality
+questions.
+
+
+These constructions retain the logical distinction of
+\cref{prop:cofinite-positive-observations}. Finite clock tests concern
+the displayed executions, and worst-case profiles are formed before
+taking eventual germs. Totality and asymptotic membership remain
+$\Truth$-valued; the cofinite germ quotient acquires no nonconstant
+positive resource test. The finite code constructors and first-return
+searches above therefore instantiate the existing foundation without
+an additional validity oracle, representative selection, or logical
+axiom. We now return to varying the valuations of fixed histories.
+
 
 \section{Differential calculus of resource constraints}
 \label{sec:relative-geometry}
@@ -5774,7 +7018,8 @@ history substitution gives the environment comparison.
 \item \textbf{Implement finite coefficients.}
 Monomial enumeration, rational arithmetic, and finite folds are
 uniform NNO recursions in the order and polynomial data.
-The specified arithmetic name maps implement them.
+The numerical covers and arithmetic trackers of
+\cref{prop:coefficient-name-covers} implement them.
 The resulting Taylor coefficients may be signed, and lie in $K$.
 \end{enumerate}
 \end{proof}
@@ -5862,19 +7107,26 @@ The forgetful functor $\CAlg_R\to\Mod_R$ has left adjoint
 $T=\Sym_R$. Its unit inserts linear generators and its multiplication
 substitutes polynomials.
 \end{theorem}
-\begin{proof}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Construct the polynomial quotient.}
 Form finite commutative polynomial expressions with coefficients in
 $R$ and symbols $[m]$ for $m\in M$, and take the effective quotient
 by the algebra equations and
 \[
  [m+m']=[m]+[m'],\qquad [rm]=r[m],\qquad[0]=0.
 \]
+
+\item \textbf{Prove the universal property.}
 Evaluation of expressions extends each $R$-linear map $M\to A$
 uniquely to an $R$-algebra map $\Sym_R M\to A$. Conversely restriction
 to the symbols recovers that linear map. This proves the adjunction.
+
+\item \textbf{Verify the monad and algebra equations.}
 Insertion and substitution satisfy the monad laws because both sides
 agree on generators. Algebra multiplication and its unit are natural,
 and substitution preserves them.
+\end{enumerate}
 \end{proof}
 
 
@@ -5897,7 +7149,9 @@ There is a natural $R$-linear map
 representing $R$-derivations of $TM$. It satisfies the constant,
 Leibniz, linear, chain, and interchange identities.
 \end{theorem}
-\begin{proof}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Construct the universal derivative.}
 The $R$-linear map
 $m\mapsto(\eta_Mm,1\otimes m)$ into
 $TM\ltimes(TM\otimes_R M)$ extends uniquely to an algebra map.
@@ -5907,6 +7161,8 @@ $d_M$ satisfies
  d_M(1)=0,\qquad d_M(ab)=a\,d_Mb+b\,d_Ma,\qquad
  d_M(\eta_Mm)=1\otimes m.
 \end{equation}
+
+\item \textbf{Prove universality and naturality.}
 More generally, for a $TM$-module $N$, any $R$-linear $v:M\to N$
 gives the algebra map with generator $(\eta_Mm,v(m))$. Thus
 \[
@@ -5917,6 +7173,7 @@ which proves universality. For $f:M\to N$, the derivations
 $(Tf\otimes f)d_M$ and $d_NTf$ agree on each generator, proving
 naturality.
 
+\item \textbf{Prove the chain identity.}
 Write $\mu_M:TTM\to TM$ for substitution and
 $m_M:TM\otimes_RTM\to TM$ for multiplication. The chain identity is
 \begin{equation}\label{eq:monadic-chain}
@@ -5924,6 +7181,8 @@ $m_M:TM\otimes_RTM\to TM$ for multiplication. The chain identity is
 \end{equation}
 Both sides are derivations along $\mu_M$ and send a generator
 $p\in TM$ to $d_Mp$, so universality proves the equation.
+
+\item \textbf{Prove interchange on finite polynomials.}
 On a finite monomial, writing $m_i$ also for its inserted generator,
 \begin{equation}\label{eq:monomial-d}
  d_M(m_1\cdots m_n)
@@ -5934,6 +7193,7 @@ positions. Exchanging those positions preserves the sum, proving that
 $(d_M\otimes1_M)d_M$ is invariant under switching its last two factors.
 Every element is represented by a finite polynomial, so this proves
 interchange on the whole algebra.
+\end{enumerate}
 \end{proof}
 
 \begin{definition}[Derivations and K\"ahler differentials]\label{def:kahler-differentials}
@@ -5953,18 +7213,26 @@ $R$-derivations. For any $A$-module $N$,
  \cong(\CAlg_R)_{/A}(A,A\ltimes N).
 \]
 \end{proposition}
-\begin{proof}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Construct the differential module.}
 Take the free $A$-module on symbols $da$, $a\in A$, and quotient by
 \[
  d(a+b)=da+db,\qquad d(ra)=r\,da,\qquad
  d1=0,\qquad d(ab)=a\,db+b\,da.
 \]
+
+\item \textbf{Identify derivations and square-zero sections.}
 Its maps to $N$ are precisely $R$-linear derivations. Such a derivation
 is equivalently an algebra section $a\mapsto(a,da)$ by
-\eqref{eq:square-zero}. Relative differentials for a specified map
+\eqref{eq:square-zero}.
+
+\item \textbf{Retain relative structure and parameters.}
+Relative differentials for a specified map
 $A_0\to A$ impose the additional equations $d(a_0)=0$.
 All quotients are effective and all constructions retain their
 parameters, so the universal maps commute with substitution.
+\end{enumerate}
 \end{proof}
 
 \subsection{Finite-projective stages for resource geometry}
@@ -8165,9 +9433,15 @@ localization induces a canonical isomorphism
  \cong\Hom_{B_P}(B_P\otimes_BM,\,K/B_PM).
 \end{equation}
 For $M=B$ it sends the tangent quotient $K/B$
-to $K/B_P$.  The principal formal-deformation functor
-commutes with finite-projective Weil coefficient changes
-$A\mapsto B_P\otimes_BA$ at the level of its defining
+to $K/B_P$. For a principal cell, finite logarithm equips its
+formal-deformation objects with their canonical additive module
+structures. With $C=B_P$, $A_C=C\otimes_BA$, and
+$M_C=C\otimes_BM$, there is a natural isomorphism
+\begin{equation}\label{eq:gauge-formal-deformation}
+ C\otimes_B\operatorname{Def}^{\mathrm{pr}}_M(A)
+ \cong\operatorname{Def}^{\mathrm{pr}}_{M_C}(A_C).
+\end{equation}
+It is induced by coefficient substitution on the defining
 unit-group quotients.
 \end{proposition}
 \begin{proof}\leavevmode
@@ -8189,14 +9463,26 @@ basis, so its internal hom commutes with scalar extension:
 Apply \cref{thm:embedded-deformation-tangent} to obtain
 \eqref{eq:gauge-deformation}.
 
-\item \textbf{Construct the comparison of principal deformation functors.}
-For principal cells, tensor
-associativity identifies the extended finite Weil algebra
-and its nilpotent augmentation ideal.  The embeddings
-$B_P\subset K$ and $B\subset B_P$ map the numerator and
-denominator unit groups of \eqref{eq:formal-resource-functor}
-into their localized counterparts, commuting with all
-stage maps and reduction.  This constructs the functorial coefficient-change comparison.
+\item \textbf{Identify the localized formal-deformation objects.}
+The split augmentation gives
+$\mathfrak n_{A_C}=C\otimes_B\mathfrak n_A$.
+The tangent isomorphism above gives $T_{M_C}\cong C\otimes_BT_M$.
+The finite logarithm of \cref{thm:principal-formal-deformations}
+identifies each unit-group quotient with its additive module, so
+\[
+\begin{aligned}
+ \operatorname{Def}^{\mathrm{pr}}_{M_C}(A_C)
+ &\cong\mathfrak n_{A_C}\otimes_C T_{M_C}\\
+ &\cong(C\otimes_B\mathfrak n_A)\otimes_C(C\otimes_BT_M)\\
+ &\cong C\otimes_B(\mathfrak n_A\otimes_BT_M)\\
+ &\cong C\otimes_B\operatorname{Def}^{\mathrm{pr}}_M(A).
+\end{aligned}
+\]
+These are \eqref{eq:gauge-formal-deformation}. Finite logarithm
+and exponential are rational polynomials on nilpotent ideals;
+they commute with coefficient substitution and every augmented
+Weil map. Hence the isomorphism is induced by the original
+unit-group quotients and is natural in stages and parameters.
 \end{enumerate}
 \end{proof}
 
@@ -8303,7 +9589,11 @@ power equation, $\exists n\ge1\;(\ker(S\to R))^n=0$; witnesses enter the argumen
 \end{definition}
 
 Finite polynomial codes and their interpretations define these
-categories internally. Surjectivity and nilpotence are bounded power-object predicates. Finite polynomial and finite-projective presentations provide the computationally named tests.
+categories internally. Surjectivity and nilpotence are bounded
+power-object predicates. Finite polynomial and finite-projective
+presentations carry names for coefficient calculations by
+\cref{prop:coefficient-name-covers}; their validity predicates
+remain $\Truth$-valued.
 
 \begin{lemma}[The two affine endpoints]\label{lem:infinitesimal-endpoints}
 There are functors $c,d:\InfB\to\AffB$ and
@@ -8478,17 +9768,52 @@ this proves all the asserted limit and colimit preservation
 for $\iota_!,\iota^*,\iota_*$.
 
 \item \textbf{Construct the remaining adjoint.}
-The fourth right adjoint is constructed by
-the internal end
+For $H\in\ThickEt$, first define the presheaf
 \[
- (\iota^!H)(T)=
+ Q_H(T)=
  \operatorname{Nat}_{\ThickEt}(\iota_*a y_T,H),
 \]
-where $a y_T$ is the sheaf represented by $T$: the internal
-Yoneda density formula represents maps out of arbitrary
-$\iota_*F$ as maps out of $F$ to this end.  Equalizers and
-power objects in the internal sheaf categories construct the
-end, including its naturality and adjunction laws.
+where $a y_T$ is the sheafification of the representable
+presheaf of $T$. The internal natural-transformation object is
+an end, constructed from products and equalizers in $\E$.
+For $f:T'\to T$, precomposition with $\iota_*a y_f$ gives
+the restriction $Q_H(T)\to Q_H(T')$.
+
+\item \textbf{Verify descent for the candidate.}
+For a basic \'etale cover $(T_\lambda\to T)_\lambda$, put
+$T_{\lambda\mu}=T_\lambda\times_TT_\mu$. In $\BaseEt$,
+the covering family gives the coequalizer
+\[
+ \coprod_{\lambda,\mu}a y_{T_{\lambda\mu}}
+ \rightrightarrows\coprod_\lambda a y_{T_\lambda}
+ \longrightarrow a y_T.
+\]
+The preceding colimit-preservation calculation shows that
+$\iota_*$ preserves this coequalizer and its coproducts.
+Applying $\operatorname{Nat}_{\ThickEt}(-,H)$ therefore
+gives the equalizer
+\[
+ Q_H(T)\longrightarrow\prod_\lambda Q_H(T_\lambda)
+ \rightrightarrows\prod_{\lambda,\mu}Q_H(T_{\lambda\mu}).
+\]
+All constructions are internal and hold in every parameter
+context. Thus $Q_H$ satisfies the sheaf condition for the
+generating covers and defines an object of $\BaseEt$.
+
+\item \textbf{Prove the right adjunction.}
+Internal Yoneda density writes a sheaf $F$ as
+$F\cong\int^{T\in\AffB}F(T)\cdot a y_T$, where the dot
+denotes the internal copower. Preservation of internal
+colimits by $\iota_*$ and the defining end for $Q_H$ give
+\[
+ \operatorname{Nat}_{\ThickEt}(\iota_*F,H)
+ \cong\operatorname{Nat}_{\BaseEt}(F,Q_H).
+\]
+The isomorphism is natural in $F$ and $H$ and in all internal
+parameters. Set $\iota^!H=Q_H$. The unit and counit are the
+images of identity maps under this isomorphism and its inverse;
+naturality gives both triangle identities. This constructs
+$\iota_*\dashv\iota^!$.
 
 \item \textbf{Distinguish the two endpoint embeddings.}
 Take the affine-line sheaf $F(T)=\Gamma(T,\OO_T)$ and
@@ -8815,8 +10140,8 @@ $\mathscr S=\Sh_\E(\Cplx)$. Principal parts retain both endpoints and
 the full Taylor action of coordinate changes. Boundary principal parts
 represent pairs with equal smaller-endpoint value on the primary site;
 their inverse-limit function objects identify the completed infinitesimal
-nerve. Effective finite observations are then obtained from the same
-coefficient tower.
+nerve. Uniform finite computations on coefficient names are
+then obtained from the same coefficient tower.
 
 \subsection{The diagonal and its finite principal parts}
 \label{sec:formal-diagonal}
@@ -9653,12 +10978,15 @@ properties continue to classify the indexed data.
 
 \subsection{Observed formal towers and their effective points}
 \label{sec:formal-effective-points}
-A compatible family of formal coefficients also needs an observation
-structure. We generate it from the finite-order observations and
-apply the effective-point construction of
+We equip a compatible family of formal coefficients with the
+observation structure generated by its finite stages and apply
 \cref{sec:standalone-observations}. The generator test of
-\cref{lem:standalone-tests} then reduces the limit comparison
-to the observations at each finite stage.
+\cref{lem:standalone-tests} identifies its effective-point object.
+For cofinite numerical input, positive tests on these coefficient
+modules are constant by \cref{prop:cofinite-positive-observations}.
+The numerical covers of \cref{prop:coefficient-name-covers} retain
+the finite computations on coefficient names; their evaluation
+equations are specified below.
 
 \begin{theorem}[Effective points of an observed inverse tower]
 \label{thm:effective-formal-towers}
@@ -9742,12 +11070,26 @@ an observed dcpo $\widehat{\mathsf D}^{\,q}$ with
        (\mathcal D_{X_A}^{(q)},\mathcal O_{\mathrm{inf}}).
 \end{equation}
 The same construction applies to finite normalized coefficient
-objects and their compatible-family limit.  The final comparison
+objects and their compatible-family limit. The final isomorphism
 is \cref{thm:primary-synthetic-cochains}.
+
+\item \textbf{Identify semantic tests and construct named observations.}
+In the cofinite numerical fibre these objects and their limits
+are $B$-modules, so their maps to $\Sigma$ are constant by
+\cref{prop:cofinite-positive-observations}. Thus the effective-point
+identifications above do not assert nonconstant tests of coefficient
+germs. Use the numerical covers
+$q_r:N_r\onto P_q^r$ and
+$q_\infty:N_\infty\onto\varprojlim_rP_q^r$ of
+\cref{prop:coefficient-name-covers}. Their coordinate maps satisfy
+$q_rp_r=\pi_rq_\infty$. A finite numerical test on $p_r(n)$ is a
+test on the supplied coefficient name. It descends to a semantic
+positive test exactly when it coequalizes the name kernel pair;
+every such descended test is constant in this fibre.
 \end{enumerate}
 \end{construction}
 
-\begin{proposition}[Finite-output observation and name transport]
+\begin{proposition}[Finite-output operations on coefficient names]
 \label{prop:formal-finite-output-tracking}
 An internal map between coefficient towers, or between
 their limits whose order-$r$ output is given uniformly by a finite
@@ -9759,12 +11101,19 @@ the de Rham differentials and completed homotopies constructed
 below have the same property by their stated finite coefficient
 formulas.
 
-In $\E$,
-the specified arithmetic name maps implement these operations
-on their projective name presentations, uniformly in the order
-and supplied parameters.  A uniformly implemented compatible input
-family consequently gives uniformly implemented finite output
-observations of the resulting formal datum.
+In $\E$, the numerical covers of
+\cref{prop:coefficient-name-covers} carry uniform trackers for
+these finite formulas. If $q_\infty:N_\infty\onto C_\infty$
+presents the input limit and $q'_r:N'_r\onto C'_r$ presents
+output order $r$, the constructed operations satisfy
+\[
+ q'_r\,\widehat f_r\,p_{b(r)}
+   =\pi'_r f\,q_\infty.
+\]
+The order and the supplied parameter names are inputs to one
+numerical operation. Finite output tests are made on these
+returned names; the displayed equation gives their exact
+coefficient denotations.
 \end{proposition}
 \begin{proof}\leavevmode
 \begin{enumerate}[leftmargin=*,align=left]
@@ -9779,9 +11128,11 @@ extends the result to all generated observations; its effective-point
 functor then supplies the claimed map.
 
 \item \textbf{Compose the specified arithmetic name maps.}
-Each finite formula is a composition of the specified arithmetic,
-finite-list, rational-coefficient, and matrix operations.  Their
-name maps compose by \cref{lem:standalone-syntax}.
+Each finite formula is a composition of arithmetic, finite-list,
+rational-coefficient, and matrix operations. Their numerical covers
+and tracked lifts are constructed in
+\cref{prop:coefficient-name-covers}; their implementations compose
+by \cref{lem:standalone-syntax}.
 
 \item \textbf{Construct one uniform operation on finite outputs.}
 The order bound $b(r)$ and the finite lists of coefficient operations
@@ -9789,17 +11140,21 @@ are constructed by NNO recursion, so the index is an input to one
 uniform operation.
 
 \item \textbf{Verify products, descent, and dependent name transport.}
-A map defined on several coefficient objects
-uses their finite product presentation.  Passing from presentations
-to denotations preserves its equation; dependent inputs use the
-projective refinement of \cref{prop:standalone-name-lifting} before taking a tracker.  This proves the finite-output comparison on names.
+Use the finite product of numerical coefficient covers for several
+inputs. Coordinate evaluation followed by the finite tracker gives
+$\widehat f_rp_{b(r)}$; composing with $q'_r$ gives
+$\pi'_rfq_\infty$ by the defining value equations. For dependent
+inputs retain the parameter cover and pull back the coefficient
+presentations as in \cref{prop:coefficient-name-covers}. These
+equations descend, proving exact denotation and parameter coherence.
 \end{enumerate}
 \end{proof}
 
 The limit classifies compatible effective points with the generated
-observations. A uniform compatible family of names carries its
-tracker; projective presentations of the limit are supplied by
-\cref{prop:standalone-name-lifting}.
+observations. Its numerical name cover and uniform finite
+evaluations are constructed in \cref{prop:coefficient-name-covers}.
+For cofinite coefficients, positive semantic tests are constant;
+the finite computation remains recorded on its names.
 
 We can now use the formal neighbourhoods and their identified
 function objects to build cochains on the infinitesimal nerve.
@@ -9823,8 +11178,8 @@ Functions on the completed infinitesimal nerve and K\"ahler
 forms give two descriptions of this differential information. We
 construct a chain-homotopy equivalence between them over the
 resource coefficients. The geometric function calculation is
-\cref{thm:primary-sdg,thm:primary-synthetic-cochains}; its effective
-finite observations are
+\cref{thm:primary-sdg,thm:primary-synthetic-cochains}; its uniform
+finite computations on coefficient names are constructed in
 \cref{constr:observed-coefficient-towers,prop:formal-finite-output-tracking}.
 The de Rham and crystalline precedents are
 \citep{GrothendieckDeRham,BerthelotOgus}, and the finite rational
@@ -10216,51 +11571,110 @@ as product maps $i,p,h$, obey
 The target is $\Omega^\bullet_{A/B}$ with zero homogeneous
 differential before perturbation.
 
-\item \textbf{Construct the completed perturbation maps.}
-In every finite truncation,
-$h\Delta$ and $\Delta h$ are nilpotent because $\Delta$ raises
-filtration.  Therefore the following sums are finite modulo
-any specified difference degree, and define internal maps of
-the completed product:
+\item \textbf{Truncate both sides of the contraction.}
+For $r\in\N$, retain difference degrees at most $r$ on
+the source and form degrees at most $r$ on the target:
+\begin{equation}\label{eq:finite-derham-truncations}
+ \begin{aligned}
+ N_{\le r}^q
+   &=\bigoplus_{q\le m\le r}A\otimes_BC^{q,m}_0(V),\\
+ T_r^q&=\begin{cases}
+       \Omega^q_{A/B},&0\le q\le r,\\
+       0,&\text{otherwise}.
+       \end{cases}
+ \end{aligned}
+\end{equation}
+The differential on $T_r$ is initially zero. Since $h$ and
+$\delta_0$ preserve difference degree, while $i$ inserts
+difference degree equal to form degree and $p$ extracts it,
+the homogeneous contraction descends to $N_{\le r}$ and $T_r$.
+Write its operators as $i_r,p_r,h_r,\delta_{0,r}$. The
+perturbation also descends, giving $\Delta_r$ and
+$\delta_r=\delta_{0,r}+\Delta_r$.
+
+\item \textbf{Construct the finite perturbation maps.}
+Both $h_r\Delta_r$ and $\Delta_rh_r$ raise difference
+degree, so their $(r+1)$st powers vanish. Define the finite sums
+\[
+ \begin{aligned}
+ J_r&=\sum_{k=0}^r(-h_r\Delta_r)^k i_r,\\
+ H_r&=\sum_{k=0}^r(-1)^k h_r(\Delta_rh_r)^k,\\
+ p'_r&=p_r\sum_{k=0}^r(-\Delta_rh_r)^k,
+ \qquad d'_r=p_r\Delta_rJ_r.
+ \end{aligned}
+\]
+
+\item \textbf{Verify the perturbation identities coefficientwise.}
+These are the finite-geometric-series formulas of the basic
+perturbation lemma, applied to the contraction onto $T_r$
+\citep{MillerRahmati}.  Substitution into
+$(\delta_{0,r}+\Delta_r)^2=0$ and the homogeneous
+contraction equations gives
+\[
+ \begin{gathered}
+ (d'_r)^2=0,\qquad \delta_rJ_r=J_rd'_r,\qquad
+ p'_r\delta_r=d'_rp'_r,\\
+ p'_rJ_r=1_{T_r},\qquad
+ \delta_rH_r+H_r\delta_r=1_{N_{\le r}}-J_rp'_r.
+ \end{gathered}
+\]
+Deleting difference degree $r+1$ on the source and form degree
+$r+1$ on the target commutes with all these operators. In the
+finite sums, the additional terms vanish after this deletion.
+Thus the contractions form a compatible inverse system.
+
+\item \textbf{Identify the transferred projection.}
+Filtration identifies their transferred terms exactly.
+The map $p$ extracts difference degree equal to cochain degree;
+$h$ preserves difference degree but lowers cochain degree, so
+$p\Delta h=0$. The same degree calculation holds at each
+finite stage. Thus $p'_r=p_r=\rho_r$, where $\rho_r$ is
+the induced map $N_{\le r}\to T_r$.
+
+\item \textbf{Identify the transferred de Rham differential.}
+Terms in
+$p\Delta(h\Delta)^ki$ with $k\ge1$ have difference degree
+strictly above target cochain degree, and hence vanish.  Only
+$p_r\Delta_ri_r$ survives in $d'_r=p_r\Delta_rJ_r$.
+For a polynomial coefficient $a$, the component of degree one
+of $a(x+u)-a(x)$ is $da$; applying alternating projection to
+the remaining linear difference coefficients gives
+\[
+ (d'_r)^q=d_r^q=
+ \begin{cases}
+ d_{\mathrm{dR}}^q,&0\le q<r,\\
+ 0,&\text{otherwise}.
+ \end{cases}
+\]
+Consequently $(T_r,d_r)$ is the brutal truncation of the de Rham
+complex in form degrees at most $r$, with zero differential
+out of its top degree.
+
+\item \textbf{Pass to the compatible completed maps.}
+The source inverse limit is the completed normalized complex,
+and the target inverse limit is the full de Rham complex:
+\[
+ \varprojlim_r N_{\le r}^\bullet
+   \cong N^\bullet_{\mathrm{inf}}(A/B),\qquad
+ \varprojlim_r(T_r,d_r)
+   \cong(\Omega^\bullet_{A/B},d_{\mathrm{dR}}).
+\]
+The second identification is degreewise eventually constant.
+The compatible finite formulas therefore define internal maps
 \begin{equation}\label{eq:completed-perturbation-maps}
  \begin{aligned}
  J&=(1+h\Delta)^{-1}i
    =\sum_{k\ge0}(-h\Delta)^k i,\\
  H&=h(1+\Delta h)^{-1}
    =\sum_{k\ge0}(-1)^k h(\Delta h)^k,\\
- p'&=p(1+\Delta h)^{-1},\qquad
- d' =p\Delta J.
+ p'&=p(1+\Delta h)^{-1}=\rho,\qquad
+ d'=p\Delta J=d_{\mathrm{dR}}.
  \end{aligned}
 \end{equation}
-
-\item \textbf{Verify the perturbation identities coefficientwise.}
-These are the finite-geometric-series formulas of the basic
-perturbation lemma, applied on each finite truncation
-\citep{MillerRahmati}.  Substitution into
-$(\delta_0+\Delta)^2=0$ and the homogeneous contraction
-equations gives
-$\delta J=Jd'$, $p'\delta=d'p'$,
-$p'J=1$, and $\delta H+H\delta=1-Jp'$.
-The equations agree under truncation and hence hold in the
-internal inverse limit. This proves the perturbation identities coefficientwise.
-
-\item \textbf{Identify the transferred projection.}
-Filtration identifies their transferred terms exactly.
-The map $p$ extracts difference degree equal to cochain degree;
-$h$ preserves difference degree but lowers cochain degree, so
-$p\Delta h=0$.  Thus $p'=p=\rho$.
-
-\item \textbf{Identify the transferred de Rham differential.}
-Terms in
-$p\Delta(h\Delta)^ki$ with $k\ge1$ have difference degree
-strictly above target cochain degree, and hence vanish.  Only
-$p\Delta i$ survives in $d'=p\Delta J$.
-For a polynomial coefficient $a$, the component of degree one
-of $a(x+u)-a(x)$ is $da$; applying alternating projection to
-the remaining linear difference coefficients gives precisely
-\[
- d'=p\Delta i=d_{\mathrm{dR}}.
-\]
+Every displayed sum is finite in each specified output
+difference degree. Taking inverse limits of the explicit
+operator identities proves the corresponding completed
+identities; no exactness assertion about inverse limits is used.
 
 \item \textbf{Establish the completed homotopy equivalence.}
 Consequently the completed maps satisfy
@@ -11268,9 +12682,9 @@ give the following tracking result.
 The finite coefficient operations defining $P^r$, normalized
 cochains, $d$, truncation, and formal Taylor transport commute
 with substitution of all computational parameters.  Their
-realizations on supplied effective coefficient names are
-uniformly tracked when the underlying names for arithmetic operations
-are supplied.  Their semantic equalities, closed-form predicates,
+realizations on the numerical coefficient covers of
+\cref{prop:coefficient-name-covers} have uniform trackers obtained
+by composing the constructed arithmetic operations.  Their semantic equalities, closed-form predicates,
 and cohomology classes remain predicates and quotients in $\E$;
 their classifiers take values in $\Truth$.
 \end{proposition}
@@ -11296,7 +12710,10 @@ maps, their implemented finite outputs, and parameter coherence.
 \item \textbf{Keep coefficient predicates and quotients typed.}
 Equality and closedness are kernel and equalizer conditions, and
 cohomology is formed by internal quotients. These remain constructions
-in $\E$ with $\Truth$-valued predicates.
+in $\E$ with $\Truth$-valued predicates. In the cofinite numerical
+fibre, \cref{prop:cofinite-positive-observations} makes semantic
+positive tests on the coefficient modules constant; the finite
+tests supplied here are tests on their numerical names.
 \end{enumerate}
 \end{proof}
 
@@ -12183,6 +13600,11 @@ Then
 \]
 returns the number of updates before the halted state and the output.
 The cost is zero for an initially halted configuration.
+This measurement counts the specified register updates. Its relation
+to binary-input time is governed by the explicit input and output
+convention; \cref{prop:wc-counter} proves the numeric-counter
+obstruction, while \cref{constr:wc-tm,prop:wc-tm-adequacy}
+construct the bit-input time instance.
 
 \item \textbf{Record the configuration history.}
 Tagging each
@@ -12401,9 +13823,23 @@ the corresponding upper-feasibility judgment for $p(e)$.
 \item \textbf{Construct the size-indexed bound function and admitted budget.}
 Composition of the specified size and bound descriptions computes the
 bound function; rational inclusion and the germ quotient give its
-germ. The principal admitted-ideal constructor and its name
-implementation from \cref{prop:standalone-numerical-cover} give the budget. Its pairing is
-$u\mapsto u([g_\beta])$, so admission is explicit.
+germ. The unit of $\J$ from \cref{thm:standalone-domain} gives
+$\eta_L([g_\beta])=\downarrow[g_\beta]$. Its pairing is
+\[
+ \chi_{\downarrow[g_\beta]}(u)
+ =\bigl(\exists a\le[g_\beta]\;u(a)\bigr)=u([g_\beta]),
+\]
+so admission is explicit and uniform in the supplied parameters.
+For the name presentation, let $C$ be a partitioned carrier of the
+supplied description names, let $f:C\to\J L$ be the resulting budget
+map, and let $q:C_{\J L}\onto\J L$ be a target name cover.
+Applying \cref{prop:standalone-name-lifting}, take the canonical
+partitioned cover of $C\times_{\J L}C_{\J L}$. Its tracked projections
+construct the covered-span presentation
+\[
+ C\xleftarrow[\mathrm{epi}]{p}\widehat P
+   \xrightarrow{v}C_{\J L},\qquad qv=fp.
+\]
 
 \item \textbf{Identify the bounded clock with the time inequality.}
 For each $x$,
@@ -12428,6 +13864,13 @@ finite size fibres or an enumeration of all names of a given size.
 An extensional size map is pulled back along $q_X$ when available;
 an encoding size may instead depend on the name. Computing a bound
 for purposes of checking it also has its own recorded execution cost.
+
+For finite binary words, \cref{constr:wc-max,prop:wc-profile-clock}
+construct the length fibres and their worst-case maxima explicitly.
+\Cref{thm:wc-adjunction} gives the exact equivalence between an
+upper bound pulled back along length and an upper bound on those
+maxima. The lower input quantifier is characterized separately in
+\cref{prop:wc-lower}.
 
 \subsection{A numerical program and two size conventions}
 \label{app:complexity-size-example}
@@ -12965,12 +14408,20 @@ with measured response coefficients. Resource deformation complexes
 then describe constrained variations, including compatibility between
 moving budgets and the effect of permitted overheads on obstructions.
 
+The finite-word instance also identifies conventional worst-case
+complexity inside this geometry. Fibrewise maximum is left adjoint
+to length pullback; the constructed machine instance yields the
+standard deterministic time and workspace upper classes and the
+polynomial class $\mathbf P$. Classical universal lower predicates
+are recovered by implementationwise double-negation closure,
+without identifying them with effective witness selection
+(\cref{thm:wc-adjunction,thm:wc-classes,thm:wc-classical-lower,thm:wc-p,thm:wc-space}).
+
 The primary infinitesimal geometry represents the function objects
 needed for completion, de Rham cochains, and crystalline jets.
 The comparison with K\"ahler forms, the equivalence between
 connections and stratifications, and the principal-parts description
-of differential operators retain the same resource parameters and
-effective finite observations.
+of differential operators retain the same resource parameters and uniformly tracked finite coefficient names.
 
 The examples exercise these structures together. A measured family has
 polynomial bounds at every finite order without a common polynomial
@@ -13210,38 +14661,100 @@ constructions of
 Costs are subsequently assigned by the execution histories
 and valuations of the main text.
 
-\begin{proposition}[Names and tracked lifts]\label{prop:standalone-name-lifting}
-Every object of $\Eff$ has a regular-epimorphic
-partitioned-assembly presentation. On a specified projective source,
-an arrow has a tracked lift through a target name cover.
-Partial arrows have implementations with the same classified domain.
-Finite products and substitutions admit partitioned refinements;
-equations hold after realization and on common refinements.
+\begin{lemma}[Lifting to a modest name object]
+\label{lem:modest-target-lifting}
+Let $C$ be a partitioned assembly, let $D$ be a modest assembly,
+and let $r:D\onto Y$ be a regular epimorphism in $\Eff$.
+Every arrow $u:C\to Y$ has a tracked lift
+$\widetilde u:C\to D$ with $r\widetilde u=u$.
+This construction uses no external choice.
+\end{lemma}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Extract a numerical output witness.}
+Regular epimorphy realizes the total relation $r(d)=u(c)$.
+Apply its totality realizer to the distinguished name
+$\varepsilon_C(c)$. The output contains a name $n_c$ of some
+$d\in D$ and evidence of the displayed equation.
+
+\item \textbf{Recover the unique denotation.}
+Modesty says that a numerical name realizes at most one element of
+$D$. Hence the relation $n_c\Vdash_D d$ is total and functional
+in $c$. Unique-value comprehension defines $\widetilde u(c)=d$.
+The program extracting $n_c$ tracks this map, and the retained
+equality evidence proves $r\widetilde u=u$.
+\[
+\begin{tikzcd}[column sep=large,row sep=large]
+C \arrow[r,"\widetilde u"] \arrow[dr,"u"'] &
+D \arrow[d,two heads,"r"]\\
+&Y
+\end{tikzcd}
+\]
+
+\item \textbf{Retain parameters.}
+Apply the same construction on the canonical partitioned cover of
+the parameter object times the input cover. One realizer handles all
+valid parameter names. The resulting equality descends; no element
+of a multiply inhabited fibre has been selected.
+\end{enumerate}
+\end{proof}
+
+\begin{proposition}[Canonical names, covered arrows, and partial lifts]
+\label{prop:standalone-name-lifting}
+Every object of $\Eff$ has a canonical regular-epimorphic
+partitioned-assembly presentation relative to its realizing relation.
+Every semantic arrow has a tracked covered-span presentation with
+exact denotation; every classified partial arrow has such a
+presentation with exactly its pulled-back domain. For a modest target
+name cover, first-hit search constructs an actual partial name map
+with that domain and value. Composition, finite products, and
+parameter substitution are implemented on partitioned refinements,
+and their semantic equations descend through effective quotients.
 \end{proposition}
 \begin{proof}\leavevmode
 \begin{enumerate}[leftmargin=*,align=left]
-\item \textbf{Lift total arrows through projective presentations.}
-Use the projective cover supplied by the exact-completion
-presentation \citep[Corollaries 10.6.4--10.6.5]{Birkedal2000TypesComputability}.
-For $q:C\onto X$, $q':C'\onto Y$, and $f:X\to Y$,
-pull back $q'$ along $fq$. The resulting regular epimorphism onto
-the projective $C$ splits. Composing its section with the other
-projection gives $\widehat f:C\to C'$ and
-$q'\widehat f=fq$. Fullness of the partitioned-assembly embedding
-supplies its single permitted tracker.
+\item \textbf{Construct the canonical cover.}
+For an object presented by realizability equality $E(x,y)$, put
+\[
+ \widehat X=\{(x,n):n\in E(x,x)\},\qquad
+ \varepsilon_{\widehat X}(x,n)=n.
+\]
+Projection to $x$ is a regular epimorphism. The carrier retains all
+realizing witnesses, so it chooses no name for any semantic element.
+For an assembly this is the same construction with $n\Vdash_X x$.
 
-\item \textbf{Construct a projective presentation of the hit domain.}
-For a partial arrow, pull its domain back to $C$ and lift its
-$\Sigma$-classifier through $2^\N\onto\Sigma$. Let $\alpha_c$
-be the resulting total stream. Its hit assembly
-$H=\{(c,n):\alpha_c(n)=1\}$ is partitioned and projective.
-The semantic value on $H$ therefore lifts to $C'$.
+\item \textbf{Present total arrows by covered spans.}
+For $q:C\onto X$, $q':C'\onto Y$, and $f:X\to Y$, form
+$P=C\times_Y C'$ using $fq$ and $q'$, and take its canonical
+partitioned cover $\widehat P\onto P$. Its projections give
+$p:\widehat P\onto C$ and $v:\widehat P\to C'$ with
+$q'v=fqp$.
+\[
+\begin{tikzcd}[column sep=large,row sep=large]
+\widehat P \arrow[r,"v"] \arrow[d,two heads,"p"'] &
+C' \arrow[d,two heads,"q'"]\\
+C \arrow[r,"fq"'] &Y
+\end{tikzcd}
+\]
+Both name maps are tracked. The map $q'v$ coequalizes the kernel
+pair of $p$ and descends to $fq$; its further descent through $q$
+is exactly $f$. No splitting of $p$ is used.
 
-\item \textbf{Implement the partial lift by first-hit search.}
-Use \cref{alg:partial-name-lift}, with $g$ the tracked value map
-on the hit assembly. Search terminates exactly on the original domain;
-the returned name realizes the original value. The functional
-first-hit relation defines the classified partial arrow.
+\item \textbf{Recover the exact partial domain.}
+For $f:X\pmap Y$ with domain mono $D_f\incl X$, pull that
+domain back to $C$. Cover $q^{-1}D_f$ partitionedly, then pull
+back the target cover and cover that pullback. The resulting
+left leg into $C$ has image exactly $q^{-1}D_f$, and the right
+leg denotes $f$ there. Thus descent preserves both domain and value.
+
+\item \textbf{Construct first-hit lifts for modest target names.}
+For a $\Sigma$-classified domain, \cref{lem:modest-target-lifting}
+lifts its classifier on $C$ through the modest object
+$2^\N\onto\Sigma$. Write the resulting stream as $\alpha_c$.
+The hit assembly $H=\{(c,n):\alpha_c(n)=1\}$ is partitioned.
+When $C'$ is modest, that lemma lifts the semantic value on $H$
+to a tracked map $g:H\to C'$. The first-hit operation is
+\cref{alg:partial-name-lift}.
 \begin{algorithm}[H]
 \caption{Tracked partial evaluation on a name}\label{alg:partial-name-lift}
 \small
@@ -13254,38 +14767,116 @@ first-hit relation defines the classified partial arrow.
 \State \Return $g(c,n)$
 \end{algorithmic}
 \end{algorithm}
+The search terminates exactly on $q^{-1}D_f$ and returns a name
+of the original value. Its delayed recursion evaluates $g$ only
+on valid hit names, giving the claimed classified partial map.
 
-\item \textbf{Verify the domain-sensitive implementation.}
-The first-hit search is implemented by represented natural-number
-recursion with delayed recursive calls. Every value used after
-a hit has its stated domain witness, so no test for arbitrary
-pca application definedness is used.
+\item \textbf{Compose spans and construct refinements.}
+Compose covered spans by pulling back the second left leg along
+the first right leg and taking a canonical partitioned cover.
+Pullback stability of regular epimorphisms makes the resulting
+domain image exactly the composite semantic domain. Finite
+products and parameter pullbacks use the same construction.
+Two covers have a common refinement obtained by covering their
+fibre product over the denotation object.
 
-\item \textbf{Construct dependent lifts and common refinements.}
-Finite products of partitioned presentations are partitioned.
-For a dependent pullback, cover the pullback by a partitioned
-assembly and perform the same construction there. Two presentations
-have the common refinement obtained by covering their fibre product
-over the denotation object.
-
-\item \textbf{Verify coherence after realization.}
-Identity and composition of the specified
-lifts satisfy their squares by composition; different selected lifts
-need only agree after realization. This is precisely the coherence
-asserted, and requires no functorial selection of one name per
-denotation.
+\item \textbf{Descend equations and finite returns.}
+Identity and composition have their specified denotations on
+common refinements, so their equations descend through the
+effective quotients. For iteration, cover the witnesses returning
+after each finite number of transitions and take the image of
+their $\N$-indexed sum. Induction on return length identifies
+each component with the semantic return component; their union
+is exactly the semantic finite-return domain. Actual implemented
+primitives compose by the first-hit and finite-return algorithms;
+their trackers and histories are retained as implementation data.
 \end{enumerate}
 \end{proof}
 
-For a modest object one can use its usual partial-equivalence-relation
-presentation on numerical names: the cover consists of the names in
-the domain of the PER, and its kernel pair is the PER.
-An extensional tracker descends through this pair; a morphism lifts
-by the preceding proposition. The same statement for a relation
-retains a name for its membership proof. An inclusion of represented
-relations lifts after pulling back their proof-name covers, so
-internal witness transformations used by finite algorithms can
-be implemented on those presentations.
+The distinction from unrestricted partitioned-assembly projectivity
+is essential. Give an external set-surjection constant name $0$ on
+both carriers. It is a regular epimorphism of assemblies; its
+splitting would split the original set-surjection. Thus arbitrary
+fixed-carrier projective lifting entails external choice
+\citep[Section 2.4]{Hofstra2003Completions}. Canonical covers, the
+modest-target lemma, and the effective descent above require no
+such splitting.
+
+For a modest object its PER support is a numerical name cover;
+the kernel pair is the PER. Extensional trackers descend through
+that pair, and \cref{lem:modest-target-lifting} supplies lifts to
+the modest support. For a represented relation, pull back the
+name cover along its membership mono and retain the resulting
+proof names. General relations use the covered-span construction.
+
+\begin{proposition}[Numerical covers of coefficient objects and towers]
+\label{prop:coefficient-name-covers}
+The coefficient objects built from $B\incl K$ and resource
+submodules by finite products, finite lists, effective quotients,
+subobjects, and displayed finite-projective retracts have modest
+numerical name covers. The compatible coefficient towers used in
+\cref{sec:formal-completion} have numerical name covers with uniform
+coordinate evaluation. Arithmetic and the stated finite coefficient
+formulas have tracked lifts on these covers, uniformly in their
+numerical orders and coefficient presentation codes.
+\end{proposition}
+\begin{proof}\leavevmode
+\begin{enumerate}[leftmargin=*,align=left]
+\item \textbf{Present germs and their subobjects.}
+The modest sequence object $\QQ^X$ has its numerical PER support
+cover, and its quotient onto $K$ is regular epic. Modest objects
+are closed under exponentials and subobjects in $\Eff$
+\citep{VanOosten2008Realizability}. Pull the sequence object back
+along $B\incl K$ or $M\incl K$ and take the numerical support of
+the resulting modest subobject. Membership witnesses are
+retained; their validity is not asserted to be $\Sigma$-classified.
+
+\item \textbf{Construct finite coefficient presentations.}
+Products of the covers cover finite products. Tagged finite lists
+of names cover finite lists; composing with a quotient covers
+its quotient. Pullback along a mono covers a subobject. A
+displayed retract is a subobject of its finite free presentation,
+so the same construction applies. Polynomial coefficients use
+finite lists and their effective equation quotients. Finite-source
+Hom objects are retracts of finite powers by the displayed
+dual-basis formulas. All constructions are uniform in the
+finite presentation codes.
+
+\item \textbf{Cover compatible towers without selecting coordinates.}
+Let $q_r:D_r\onto C_r$ be the resulting uniform numerical covers.
+The tagged object $D=\sum_{r:\N}D_r$ is modest. Take a
+canonical partitioned cover $P\onto\varprojlim_r C_r$.
+The coordinate evaluation
+$P\times\N\to\sum_r C_r$ lifts through $D$ by
+\cref{lem:modest-target-lifting}. Transpose this lift and restrict
+to the subobject $H$ of $D^\N$ whose $r$th name has tag $r$
+and whose denotations satisfy the tower equations. The resulting
+map $P\to H$ proves that $H\to\varprojlim_r C_r$ is epic.
+As a subobject of a modest exponential, $H$ is modest and has
+a numerical support cover $N_\infty\onto H$.
+\[
+\begin{tikzcd}[column sep=large,row sep=large]
+N_\infty \arrow[r,"p_r"] \arrow[d,two heads,"q_\infty"'] &
+D_r \arrow[d,two heads,"q_r"]\\
+\varprojlim_s C_s \arrow[r,"\pi_r"'] & C_r
+\end{tikzcd}
+\]
+Evaluation of the coded name sequence defines $p_r$ uniformly
+in $r$, and $q_rp_r=\pi_rq_\infty$.
+
+\item \textbf{Implement formulas and retain parameter contexts.}
+Apply \cref{lem:modest-target-lifting} to each coefficient
+operation with its modest numerical target cover. Compose the
+resulting arithmetic, finite-list, and matrix trackers. An output
+of order $r$ using input order $b(r)$ first applies $p_{b(r)}$
+and then its finite tracker. For an arbitrary parameter context,
+retain that context's partitioned cover and pull back these
+coefficient presentations. The numerical coordinates present
+coefficients; they do not enumerate an arbitrary parameter carrier.
+All domain and value equations descend on the retained covers.
+\end{enumerate}
+\end{proof}
+
 
 \begin{definition}[Typed finite descriptions]\label{def:typed-finite-descriptions}
 For a fixed finite typed computational signature, a
@@ -13317,9 +14908,16 @@ in $\Eff$.
 
 \item \textbf{Retain typing and environment parameters.}
 Take the well-typed subobject using the constructor typing equations.
-An environment object $\Env$ retains those labels and operation
-parameters. Its well-typed descriptions over $\theta:\Env$
-form the objects $E_{X,Y,\theta}$.
+For each primitive slot, form the object of its semantic operation,
+actual partial name map, and numerical tracker, subject to the
+domain-and-value equations. These are subobjects defined by the
+partial-map objects, numerical application, and equality predicates
+of $\E$. Their finite product with the label objects constructs
+the implemented environment object $\Env$; no section onto all
+semantic operations is used. Structural and arithmetic primitives
+are supplied by their explicit algorithms, and numerical primitives
+by \cref{prop:standalone-numerical-cover}. Its well-typed
+descriptions over $\theta:\Env$ form $E_{X,Y,\theta}$.
 \end{enumerate}
 \end{construction}
 
@@ -13363,9 +14961,11 @@ a recursion constructor forms its evaluator rather than running it.
 \end{algorithm}
 
 \item \textbf{Implement the constructors on names.}
-On names, retain the primitive implementations and their
-classified-domain squares from
-\cref{prop:standalone-name-lifting}. Composition runs the first
+On names, use the actual primitive maps, trackers, and
+classified-domain squares in the constructed environment of
+\cref{constr:standalone-syntax}. The modest-target and first-hit
+constructions of \cref{prop:standalone-name-lifting,prop:coefficient-name-covers}
+supply the coefficient primitives. Composition runs the first
 implementation and then the second on the returned name;
 branching inspects its finite tag; a recursive execution runs
 its body until its exit tag is returned. The finite-return
@@ -13540,8 +15140,9 @@ $H=\{e:\varphi_e(e)\downarrow\}$ is not $\Sigma$-classified.
 $H$ is classified by its bounded-run hit stream.
 
 \item \textbf{Derive a total decision from positive nontermination.}
-A $\Sigma$-classifier of its complement lifts on the projective
-numerical presentation to a total recursive hit stream.
+By \cref{lem:modest-target-lifting}, a $\Sigma$-classifier of its
+complement lifts on the numerical presentation through $2^\N$
+to a total recursive hit stream.
 Let $\alpha,\beta$ be the total recursive hit streams for $H$
 and its assumed complement. In \cref{alg:halting-contradiction},
 \textsc{Decide} must terminate because precisely one stream has a hit.
@@ -13579,8 +15180,9 @@ The name comparisons above concern
 denotations and partial domains. Costs are supplied by
 the recorded instruction events and valuations in
 \cref{sec:retained-execution,constr:numerical-execution}.
-Neither an extensional quotient nor projective lifting identifies
-the costs of its different representatives.
+An extensional quotient identifies denotations; equality of the costs
+of its representatives holds exactly under the kernel-pair criterion
+of \cref{thm:measured-name-presentation}.
 
 
 \begin{thebibliography}{99}
@@ -13603,6 +15205,13 @@ Avigad, J. and Donnelly, K. (2004).
 Formalizing {O} Notation in {Isabelle/HOL}.
 In \emph{Automated Reasoning: IJCAR 2004}, Lecture Notes in Computer Science, vol. 3097. Springer, pp. 357--371.
 \href{https://doi.org/10.1007/978-3-540-25984-8_27}{doi:10.1007/978-3-540-25984-8\_27}.
+
+\bibitem[Barak(2023)]{BarakRunningTime}
+Barak, B. (2023).
+\emph{Introduction to Theoretical Computer Science}, Chapter 13,
+``Modeling running time.'' Online text, version 0.95 and maintained
+chapter.
+\url{https://introtcs.org/public/lec_11_running_time.html}.
 
 \bibitem[Behrend(2005)]{BehrendDR}
 Behrend, K. (2005).
@@ -13675,11 +15284,24 @@ A Fistful of Dollars: Formalizing Asymptotic Complexity Claims via Deductive Pro
 In \emph{Programming Languages and Systems: ESOP 2018}, Lecture Notes in Computer Science, vol. 10801. Springer, pp. 533--560.
 \href{https://doi.org/10.1007/978-3-319-89884-1_19}{doi:10.1007/978-3-319-89884-1\_19}.
 
+\bibitem[Hennie and Stearns(1966)]{HennieStearns1966}
+Hennie, F.~C. and Stearns, R.~E. (1966).
+Two-tape simulation of multitape Turing machines.
+\emph{Journal of the ACM} \textbf{13}(4), 533--546.
+\href{https://doi.org/10.1145/321356.321362}{doi:10.1145/321356.321362}.
+\url{https://www.cs.bu.edu/faculty/gacs/courses/cs535/papers/HennieStearns66.pdf}.
+
 \bibitem[Hochschild et~al.(1962)]{HKR}
 Hochschild, G., Kostant, B. and Rosenberg, A. (1962).
 Differential forms on regular affine algebras.
 \emph{Transactions of the American Mathematical Society}
 \textbf{102}, 383--408.
+
+\bibitem[Hofstra(2003)]{Hofstra2003Completions}
+Hofstra, P.~J.~W. (2003).
+\emph{Completions in Realizability}.
+PhD thesis, Utrecht University.
+\url{https://webspace.science.uu.nl/~ooste110/realizability/Thesis_Hofstra_A4.pdf}.
 
 \bibitem[Hyland(1982)]{Hyland1982EffectiveTopos}
 Hyland, J.~M.~E. (1982).
@@ -13701,6 +15323,12 @@ I. Jets and comonad structure.
 \href{https://doi.org/10.1016/j.geomphys.2026.106025}{doi:10.1016/j.geomphys.2026.106025}.
 Preprint \href{https://arxiv.org/abs/1701.06238}{arXiv:1701.06238}
 (2017; revised 26 October 2026).
+
+\bibitem[Kleene(1945)]{Kleene1945}
+Kleene, S.~C. (1945).
+On the interpretation of intuitionistic number theory.
+\emph{The Journal of Symbolic Logic} \textbf{10}(4), 109--124.
+\url{https://www.jstor.org/stable/2269016}.
 
 \bibitem[Knuth(1976)]{Knuth}
 Knuth, D.~E. (1976).
@@ -13799,6 +15427,12 @@ Stacks Project Authors (2026c).
 and \S 37.38 (smooth morphisms and \'etale local sections).
 \url{https://stacks.math.columbia.edu/tag/02BK}.
 Accessed 28 October 2026.
+
+\bibitem[Terwijn(2024)]{Terwijn2024FixedPoints}
+Terwijn, S.~A. (2024).
+Fixed Point Theorems in Computability Theory.
+\emph{arXiv preprint}, arXiv:2402.03069.
+\url{https://arxiv.org/abs/2402.03069}.
 
 \bibitem[van Oosten(2008)]{VanOosten2008Realizability}
 van Oosten, J. (2008).
